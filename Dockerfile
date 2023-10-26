@@ -2,7 +2,7 @@ FROM python:3.10
 
 WORKDIR /app
 
-COPY . /app
+COPY ./requirements.txt /app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install -r requirements.txt
+
+# Can cache until here if no changes in requirements -> Skip reinstalling requirements on every build
+COPY . /app
 
 # Expose the ports that your app uses
 EXPOSE 8001

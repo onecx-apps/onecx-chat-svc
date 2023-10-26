@@ -7,6 +7,7 @@ import time
 
 from dotenv import load_dotenv
 from fastapi import Body, FastAPI, File, HTTPException, UploadFile, Path
+from fastapi.openapi.utils import get_openapi
 
 from agent.data_model.chatbot_model import ChatMessageDTO, ConversationDTO, ConversationType, DocumentDTO, MessageType
 from langchain.docstore.document import Document as LangchainDocument
@@ -16,11 +17,9 @@ from agent.backend.google_cloud_service import (
     download_files_from_gcs,
 )
 
-
 from agent.backend.qdrant_service import (
     get_qdrant_client
 )
-
 
 from agent.backend.openai_service import (
     embedd_documents_openai,
@@ -29,8 +28,6 @@ from agent.backend.openai_service import (
     channeling_system_message,
     q_and_a_system_message
 )
-
-
 
 from agent.data_model.qdrant_model import (
     CustomPromptCompletion,
@@ -43,14 +40,15 @@ from agent.data_model.qdrant_model import (
 )
 from agent.utils.configuration import load_config
 
+import agent.data_model.response_model as Response
 
 # add file logger for loguru
 logger.add("logs/file_{time}.log", backtrace=False, diagnose=False)
 logger.info("Startup.")
 
-
 # initialize the Fast API Application.
 app = FastAPI(debug=True)
+app.router.tags = ["chat"]
 load_dotenv()
 
 # load the token from the environment variables, is None if not set.
@@ -79,6 +77,7 @@ def get_chat_by_conversation_id_filtered(conversationId):
     return None
 
 
+
 @app.get("/")
 def read_root() -> str:
     """Returns the welcome message.
@@ -89,7 +88,7 @@ def read_root() -> str:
     return "Welcome to the BMI Chatbot Backend!"
 
 
-@app.post("/chat")
+@app.post("/chat", responses={404: Response.NOT_FOUND})
 async def chat_with_bot(chat_message: ChatMessageDTO) -> ChatMessageDTO:
     # Check if conversation exists
     conversation = get_chat_by_conversation_id(chat_message.conversationId)
@@ -120,7 +119,7 @@ async def chat_with_bot(chat_message: ChatMessageDTO) -> ChatMessageDTO:
     conversation["history"].append(botResponse)
     return botResponse
 
-@app.get("/conversation/{conversationId}")
+@app.get("/conversation/{conversationId}", responses={404: Response.NOT_FOUND})
 async def get_conversation(conversationId: str) -> ConversationDTO:
     # Implement your logic here
 
@@ -136,7 +135,7 @@ async def get_conversation(conversationId: str) -> ConversationDTO:
 
 
 
-@app.post("/startConversation")
+@app.post("/startConversation", responses={404: Response.NOT_FOUND})
 async def start_conversation(conversation_type: str = Body(..., embed=True)) -> ConversationDTO:
     conversation_id_uuid = str(uuid.uuid4())
     start_conversation = []
@@ -196,8 +195,23 @@ def import_documents():
 
     return {"message": "Documents are imported into vector db"}
 
+# Add OpenAPI Generation Defines
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Chatbot Rest Api",
+        version="1.0.1",
+        description="This is the scheme for the **chatbot rest api**",
+        routes=app.routes,
+    )
+    openapi_schema["info"]["x-logo"] = {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Capgemini_201x_logo.svg"
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
 
-
+app.openapi = custom_openapi
 
 # initialize the databases
-get_qdrant_client()
+#get_qdrant_client()
