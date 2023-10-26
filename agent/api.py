@@ -214,4 +214,4 @@ def custom_openapi():
 app.openapi = custom_openapi
 
 # initialize the databases
-#get_qdrant_client()
+get_qdrant_client()
