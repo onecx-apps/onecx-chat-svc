@@ -1,46 +1,11 @@
 """FastAPI Backend for the Knowledge Agent."""
-import json
-import os
-import uuid
-from typing import List, Optional
-import time
-
 from dotenv import load_dotenv
-from fastapi import Body, FastAPI, File, HTTPException, UploadFile, Path
+from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-
-from agent.data_model.chatbot_model import ChatMessageDTO, ConversationDTO, ConversationType, DocumentDTO, MessageType
-from langchain.docstore.document import Document as LangchainDocument
 from loguru import logger
 
-from agent.backend.google_cloud_service import (
-    download_files_from_gcs,
-)
-
-from agent.backend.qdrant_service import (
-    get_qdrant_client
-)
-
-from agent.backend.openai_service import (
-    embedd_documents_openai,
-    search_documents_openai,
-    chat_openai,
-    channeling_system_message,
-    q_and_a_system_message
-)
-
-from agent.data_model.qdrant_model import (
-    CustomPromptCompletion,
-    EmbeddTextFilesRequest,
-    EmbeddTextRequest,
-    ExplainRequest,
-    QARequest,
-    SearchRequest,
-    SearchResponse,
-)
-from agent.utils.configuration import load_config
-
-import agent.data_model.response_model as Response
+from agent.backend.qdrant_service import get_qdrant_client
+from .routes import chat_router, document_router
 
 # add file logger for loguru
 logger.add("logs/file_{time}.log", backtrace=False, diagnose=False)
@@ -48,35 +13,13 @@ logger.info("Startup.")
 
 # initialize the Fast API Application.
 app = FastAPI(debug=True)
-app.router.tags = ["chat"]
 load_dotenv()
-
-# load the token from the environment variables, is None if not set.
-
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 logger.info("Loading REST API Finished.")
 
-chatConversationMemory = []
-def get_chat_by_conversation_id(conversationId):
-    for conversation in chatConversationMemory:
-        if conversation["conversationId"] == conversationId:
-            return conversation
-    return None
-
-#function that returns a ConversationDTO but without System Messages
-def get_chat_by_conversation_id_filtered(conversationId):
-    for conversation in chatConversationMemory:
-        if conversation["conversationId"] == conversationId:
-            conversationObj = ConversationDTO(conversationId=conversation["conversationId"], history=conversation["history"], conversationType=ConversationType(conversation["conversationType"]))
-            
-            # Code to filter out the SYSTEM messages
-            conversationObj.history = [msg for msg in conversationObj.history if msg.type != MessageType.SYSTEM]
-            
-            return conversationObj  # Return the filtered conversation object
-    return None
-
-
+# Include Routers
+app.include_router(chat_router.chat_router)
+app.include_router(document_router.document_router)
 
 @app.get("/")
 def read_root() -> str:
@@ -87,114 +30,6 @@ def read_root() -> str:
     """
     return "Welcome to the BMI Chatbot Backend!"
 
-
-@app.post("/chat", responses={404: Response.NOT_FOUND})
-async def chat_with_bot(chat_message: ChatMessageDTO) -> ChatMessageDTO:
-    # Check if conversation exists
-    conversation = get_chat_by_conversation_id(chat_message.conversationId)
-    
-    # Convert ChatMessageDTO to a dict format to append to history
-    message_dict = chat_message.dict()
-    message_dict["correlationId"] = str(uuid.uuid4())
-    message_dictDTO = ChatMessageDTO(conversationId=message_dict["conversationId"], correlationId=message_dict["correlationId"], message=message_dict["message"], type=message_dict["type"], creationDate=int(time.time()))
-
-    if not conversation:
-        # If conversation doesn't exist, raise an error
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    
-    # array for openai chat completion request - chat history with system message
-    chatCompletionArr = []
-    logger.debug(f"Here is conversation history:     {conversation['history']}")
-    for msg in conversation["history"]:
-        logger.debug(f"Here is msg:     {msg.type}")
-        chatCompletionArr.append({"role": msg.type, "content": msg.message})
-
-    # If conversation exists, append the message to its history
-    conversation["history"].append(message_dictDTO)
-
-    #response bot
-    documents = search_documents_openai(query=message_dict["message"], open_ai_token=OPENAI_API_KEY, amount=1)
-    answer, meta_data = chat_openai(query=message_dict["message"], documents=documents, openai_token=OPENAI_API_KEY, conversation_type=conversation["conversationType"], messages=chatCompletionArr)
-    botResponse = ChatMessageDTO(conversationId=chat_message.conversationId, correlationId=message_dict["correlationId"], message=answer, type=MessageType.ASSISTANT, creationDate=int(time.time()))
-    conversation["history"].append(botResponse)
-    return botResponse
-
-@app.get("/conversation/{conversationId}", responses={404: Response.NOT_FOUND})
-async def get_conversation(conversationId: str) -> ConversationDTO:
-    # Implement your logic here
-
-    conversation = get_chat_by_conversation_id_filtered(conversationId)
-    
-    if  conversation == None:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    else:
-        return conversation
-
-
-
-
-
-
-@app.post("/startConversation", responses={404: Response.NOT_FOUND})
-async def start_conversation(conversation_type: str = Body(..., embed=True)) -> ConversationDTO:
-    conversation_id_uuid = str(uuid.uuid4())
-    start_conversation = []
-    if conversation_type == "CHANNELING":
-        iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=channeling_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
-        start_conversation.append(iniialSystemMessage)
-        welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent und führe dich durch den Anmeldeprozess. \n\nWie ist dein Name?", type=MessageType.ASSISTANT, creationDate=int(time.time()))
-        start_conversation.append(welcomeMessage)
-    if conversation_type == "Q_AND_A":
-        iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=q_and_a_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
-        start_conversation.append(iniialSystemMessage)
-        welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent für heute! \n\nWas möchtest du wissen?(Q&A)", type=MessageType.ASSISTANT, creationDate=int(time.time()))
-        start_conversation.append(welcomeMessage)
-
-    chatConversationMemory.append({"conversationId": conversation_id_uuid, "history": start_conversation, "conversationType": conversation_type})
-
-    conversation = get_chat_by_conversation_id_filtered(conversation_id_uuid)
-    
-    if  conversation == None:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    else:
-        return conversation
-    
-
-@app.post("/uploadDocuments/{conversationId}")
-async def upload_documents(conversationId: str, documents: List[DocumentDTO]):
-    # Implement your logic here
-    return {"message": "Documents uploaded successfully"}
-
-
-#####qdrant rest services
-
-@app.get("/embeddings/importDocuments")
-def import_documents():
-
-    logger.info("Import documents")
-
-    # Example usage:
-    bucket_name = os.environ.get("DOCUMENTS_BUCKET")
-    local_file_path = "data/"
-
-    # Ensure the destination folder exists
-    download_files_from_gcs(bucket_name, local_file_path)
-
-    
-    embedd_documents_openai(dir=local_file_path, openai_token=OPENAI_API_KEY)
-
-    # Cleanup: Remove existing files in the destination folder
-    for file_name in os.listdir(local_file_path):
-        file_path = os.path.join(local_file_path, file_name)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-            print(f"Error deleting {file_path}: {e}")
-
-
-    return {"message": "Documents are imported into vector db"}
-
 # Add OpenAPI Generation Defines
 def custom_openapi():
     if app.openapi_schema:
@@ -204,6 +39,14 @@ def custom_openapi():
         version="1.0.1",
         description="This is the scheme for the **chatbot rest api**",
         routes=app.routes,
+        tags=[{
+                "name": "chat",
+                "description": "All chat operations can be found organized under tag **chat**"
+               },
+              {
+                "name": "document",
+                "description": "All document operations can be found organized under tag **document**"
+               }]
     )
     openapi_schema["info"]["x-logo"] = {
         "url": "https://upload.wikimedia.org/wikipedia/commons/9/9d/Capgemini_201x_logo.svg"
