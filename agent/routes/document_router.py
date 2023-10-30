@@ -42,7 +42,7 @@ def import_documents():
     return {"message": "Documents are imported into vector db"}
 
 @document_router.post("/document/upload")
-async def upload_document(file: UploadFile) -> UploadFile:
+async def upload_document(file: UploadFile) -> UploadFileDTO:
     logger.info(f"Uploading file {file.filename} directly..")
     
     # Create temporary upload directory until uploaded file is embedded
