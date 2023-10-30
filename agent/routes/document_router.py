@@ -1,15 +1,16 @@
 import os
 from fastapi import APIRouter
 from ..data_model.chatbot_model import DocumentDTO
-from agent.backend.google_cloud_service import download_files_from_gcs
 from agent.backend.openai_service import embedd_documents_openai
 from loguru import logger
 from typing import List
+from ..backend.cloud.cloud_service_factory import CloudServiceFactory
 
 document_router = APIRouter(tags=["document"])
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
+cloud_service = CloudServiceFactory(os.getenv("CLOUD_PROVIDER"))
 
 @document_router.post("/uploadDocuments/{conversationId}")
 async def upload_documents(conversationId: str, documents: List[DocumentDTO]):
@@ -21,13 +22,13 @@ async def upload_documents(conversationId: str, documents: List[DocumentDTO]):
 @document_router.get("/embeddings/importDocuments")
 def import_documents():
     logger.info("Import documents")
-
+    
     # Example usage:
     bucket_name = os.environ.get("DOCUMENTS_BUCKET")
     local_file_path = "data/"
 
     # Ensure the destination folder exists
-    download_files_from_gcs(bucket_name, local_file_path)
+    cloud_service.download_files_from_bucket(bucket_name, local_file_path)
 
     embedd_documents_openai(dir=local_file_path, openai_token=OPENAI_API_KEY)
 
