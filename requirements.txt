@@ -116,3 +116,4 @@ win32-setctime==1.1.0
 yarl==1.9.2
 zipp==3.16.2
 boto3==1.28.73
+aiofiles==23.2.1
