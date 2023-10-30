@@ -45,16 +45,19 @@ def import_documents():
 async def upload_document(file: UploadFile) -> UploadFile:
     logger.info(f"Uploading file {file.filename} directly..")
     
+    # Create temporary upload directory until uploaded file is embedded
     temp_dir = tempfile.TemporaryDirectory()
     logger.info(f"Tempdir created: {temp_dir.name}")
     destination_path = os.path.join(local_file_path, file.filename)
     
+    # Write received file to disk chunked
     async with aiofiles.open(destination_path, "wb") as out_file:
         while content := await file.read(1024):
             await out_file.write(content)
     
     embedd_documents_openai(dir=temp_dir.name, openai_token=OPENAI_API_KEY)
 
+    # Cleanup
     temp_dir.cleanup()
     return UploadFileDTO(filename=file.filename, size=file.file.tell(), content_type=file.content_type)
 
