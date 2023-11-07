@@ -22,10 +22,10 @@ from agent.backend.qdrant_service import (
 )
 
 
-from agent.backend.openai_service import (
-    embedd_documents_openai,
-    search_documents_openai,
-    chat_openai,
+from agent.backend.llama2_service import (
+    embedd_documents_llama2,
+    search_documents_llama2,
+    chat_llama2,
     channeling_system_message,
     q_and_a_system_message
 )
@@ -52,11 +52,6 @@ logger.info("Startup.")
 # initialize the Fast API Application.
 app = FastAPI(debug=True)
 load_dotenv()
-
-# load the token from the environment variables, is None if not set.
-
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
 logger.info("Loading REST API Finished.")
 
 chatConversationMemory = []
@@ -103,7 +98,7 @@ async def chat_with_bot(chat_message: ChatMessageDTO) -> ChatMessageDTO:
         # If conversation doesn't exist, raise an error
         raise HTTPException(status_code=404, detail="Conversation not found")
     
-    # array for openai chat completion request - chat history with system message
+    # array for llama2 chat completion request - chat history with system message
     chatCompletionArr = []
     logger.debug(f"Here is conversation history:     {conversation['history']}")
     for msg in conversation["history"]:
@@ -114,8 +109,8 @@ async def chat_with_bot(chat_message: ChatMessageDTO) -> ChatMessageDTO:
     conversation["history"].append(message_dictDTO)
 
     #response bot
-    documents = search_documents_openai(query=message_dict["message"], open_ai_token=OPENAI_API_KEY, amount=1)
-    answer, meta_data = chat_openai(query=message_dict["message"], documents=documents, openai_token=OPENAI_API_KEY, conversation_type=conversation["conversationType"], messages=chatCompletionArr)
+    documents = search_documents_llama2(query=message_dict["message"], amount=1)
+    answer, meta_data = chat_llama2(query=message_dict["message"], documents=documents, conversation_type=conversation["conversationType"], messages=chatCompletionArr)
     botResponse = ChatMessageDTO(conversationId=chat_message.conversationId, correlationId=message_dict["correlationId"], message=answer, type=MessageType.ASSISTANT, creationDate=int(time.time()))
     conversation["history"].append(botResponse)
     return botResponse
@@ -143,12 +138,12 @@ async def start_conversation(conversation_type: str = Body(..., embed=True)) -> 
     if conversation_type == "CHANNELING":
         iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=channeling_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
         start_conversation.append(iniialSystemMessage)
-        welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent und führe dich durch den Anmeldeprozess. \n\nWie ist dein Name?", type=MessageType.ASSISTANT, creationDate=int(time.time()))
+        welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent und führe dich durch den Anmeldeprozess. Wie ist dein Name?", type=MessageType.ASSISTANT, creationDate=int(time.time()))
         start_conversation.append(welcomeMessage)
     if conversation_type == "Q_AND_A":
         iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=q_and_a_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
         start_conversation.append(iniialSystemMessage)
-        welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent für heute! \n\nWas möchtest du wissen?(Q&A)", type=MessageType.ASSISTANT, creationDate=int(time.time()))
+        welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent für heute! Was möchtest du wissen?(Q&A)", type=MessageType.ASSISTANT, creationDate=int(time.time()))
         start_conversation.append(welcomeMessage)
 
     chatConversationMemory.append({"conversationId": conversation_id_uuid, "history": start_conversation, "conversationType": conversation_type})
@@ -182,7 +177,7 @@ def import_documents():
     download_files_from_gcs(bucket_name, local_file_path)
 
     
-    embedd_documents_openai(dir=local_file_path, openai_token=OPENAI_API_KEY)
+    embedd_documents_llama2(dir=local_file_path)
 
     # Cleanup: Remove existing files in the destination folder
     for file_name in os.listdir(local_file_path):
