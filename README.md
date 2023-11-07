@@ -47,7 +47,7 @@ Then go to http://127.0.0.1:8001/docs or http://127.0.0.1:8001/redoc to see the 
 
 ## Docker build
 
-docker build . -t onecx-chat-svc -f src/main/docker/Dockerfile
+docker build . -t onecx-chat-svc
 
 
 ## Redoc API Documentation
