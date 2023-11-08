@@ -19,7 +19,7 @@ from qdrant_client.http import models
 import logging
 from agent.backend.qdrant_service import get_qdrant_client
 
-
+from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain.embeddings import OllamaEmbeddings
 from langchain.chat_models import ChatOllama
 from langchain.callbacks.manager import CallbackManager
@@ -34,32 +34,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
-channeling_system_message = """
-Please be my assistant in navigating through the registration process.
-
-The process has the following fixed steps beginning with the step id: followed by the step name
-
-1: Full name of USER which consists of surname and lastname
-2: Is USER an EU citizen?:
-   2a: If USER is an EU citizen, then no registration is necessary and the process is finished!
-   2b: If USER is not an EU citizen then ask which is the homeland, in case the homeland was not mentioned by the USER already.
-    3a: If the homeland is in the EU, then no registration is necessary!
-    3b: If the homeland is outside the EU, ask the USER where the EU border was crossed.
-        3b1: If USER provided an (eu-entry-country) which is an EU country, then finish the registration process with step id 5 and an additional hint that the registration should be done in the (eu-entry-country):
-        3b2: If USER did not cross the EU border, ASSISTANT should finish the process with an additional hint about the german visa process!
-        3b3: IF USER provided an (eu-entry-country) which is not an EU country ask step 3b again.
-4: After the process is finished make a summary of the USER with the following fields: Full name, Homeland, EU entry country
-
-
-Please go through the process step by step from beginning to end and ask individual questions sequentially to determine which path in the registration process needs to be followed. Do not ask all questions at once. Check the answers for plausibility and if it is not repeat the question!
-The step id is only used for navigation but should not be displayed.
-
-
-
-The following list represents the EU countries:
-Belgium,Bulgaria,Denmark,Germany,Estonia,Finland,France,Greece,Ireland,Italy,Croatia,Latvia,Lithuania,Luxembourg,Malta,Netherlands,Austria,Poland,Portugal,Romania,Sweden,Slovakia,Slovenia,Spain,Czech Republic,Hungary,Cyprus
-
-"""
+channeling_system_message = """ You are a Chat Assistant which helps the user to clarify questions."""
 
 q_and_a_system_message = """
 You are a Chat Assistant which helps the user to clarify questions.
@@ -68,8 +43,6 @@ You will be provided with a document delimited by triple quotes and the users in
 Your task is to help the user by using only the provided document.
 If the document does not contain the information needed to answer this question then simply tell the user that you cant answer the question based on the additional provided knowledge and then you answer it without the provided document.
 Alawys reply to the user in the language provided in the users input.
-Always delete special characters that are used in HTML syntax like the newline characters to make it look more like a human response.
-
 """
 
 
@@ -91,7 +64,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     except Exception:
         qdrant_client.recreate_collection(
             collection_name=cfg.qdrant.collection_name_llama2,
-            vectors_config=models.VectorParams(size=1536, distance=models.Distance.COSINE),
+            vectors_config=models.VectorParams(size=4096, distance=models.Distance.COSINE),
         )
         logger.info(f"SUCCESS: Collection {cfg.qdrant.collection_name_llama2} created.")
     vector_db = Qdrant(client=qdrant_client, collection_name=cfg.qdrant.collection_name_llama2, embeddings=embedding)
@@ -100,12 +73,11 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
 
 
 @load_config(location="config/ai/llama2.yml")
-def summarize_text_llama2(text: str, token: str, cfg: DictConfig) -> str:
+def summarize_text_llama2(text: str, cfg: DictConfig) -> str:
     """Summarizes the given text using the llama2 API.
 
     Args:
         text (str): The text to be summarized.
-        token (str): The token for the llama2 API.
 
     Returns:
         str: The summary of the text.
@@ -261,9 +233,9 @@ def send_chat_completion_llama2(text: str, query: str, cfg: DictConfig, conversa
 
     #fill the prompt if not q and a then it will use channeling with the documents
     if conversation_type == "CHANNELING":
-        prompt = generate_prompt(prompt_name="llama2-channeling.j2", text=text, query=query, language="de")
+        prompt = generate_prompt(prompt_name="llama2-channeling.j2", text=text, query=query, system=channeling_system_message, language="de")
     else:
-        prompt = generate_prompt(prompt_name="llama2-qa.j2", text=text, query=query, language="de")
+        prompt = generate_prompt(prompt_name="llama2-qa.j2", text=text, query=query, system=q_and_a_system_message, language="de")
     messages.append({"role": "user", "content": prompt})
     logger.info(f"DEBUG: This is the filled prompt before request: {prompt}")
 
@@ -273,12 +245,18 @@ def send_chat_completion_llama2(text: str, query: str, cfg: DictConfig, conversa
     verbose=True
     )
 
-    response = llm.predictMessages(
-        messages=[{"role": m["role"], "content": m["content"]} for m in messages],
+    messagesBaseFormat: List[BaseMessage] = [HumanMessage(content=m["content"], additional_kwargs={}) if m["role"] == "user"
+                      else AIMessage(content=m["content"], additional_kwargs={}) if m["role"] == "assistant"
+                      else SystemMessage(content=m["content"], additional_kwargs={})
+                      for m in messages]
+
+    response = llm.predict_messages(
+        messages=messagesBaseFormat,
     )
 
-    logger.debug(response)
-    return response["choices"][0]["message"]["content"]
+    logger.info(response)
+    logger.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@after we got a response@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    return response.content
 
 def chat_llama2(documents: list[tuple[LangchainDocument, float]], messages: any, query: str, conversation_type: str, summarization: bool = False) -> Tuple[str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
     """QA takes a list of documents and returns a list of answers.

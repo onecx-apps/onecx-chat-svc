@@ -136,13 +136,13 @@ async def start_conversation(conversation_type: str = Body(..., embed=True)) -> 
     conversation_id_uuid = str(uuid.uuid4())
     start_conversation = []
     if conversation_type == "CHANNELING":
-        iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=channeling_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
-        start_conversation.append(iniialSystemMessage)
+        # iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=channeling_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
+        # start_conversation.append(iniialSystemMessage)
         welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent und führe dich durch den Anmeldeprozess. Wie ist dein Name?", type=MessageType.ASSISTANT, creationDate=int(time.time()))
         start_conversation.append(welcomeMessage)
     if conversation_type == "Q_AND_A":
-        iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=q_and_a_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
-        start_conversation.append(iniialSystemMessage)
+        # iniialSystemMessage = ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message=q_and_a_system_message, type=MessageType.SYSTEM, creationDate=int(time.time()))
+        # start_conversation.append(iniialSystemMessage)
         welcomeMessage= ChatMessageDTO(conversationId=conversation_id_uuid, correlationId="System Message", message="Hallo ich bin dein Asisstent für heute! Was möchtest du wissen?(Q&A)", type=MessageType.ASSISTANT, creationDate=int(time.time()))
         start_conversation.append(welcomeMessage)
 

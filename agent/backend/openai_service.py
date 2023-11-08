@@ -87,7 +87,7 @@ def get_db_connection(open_ai_token: str, cfg: DictConfig) -> Qdrant:
     except Exception:
         qdrant_client.recreate_collection(
             collection_name=cfg.qdrant.collection_name_openai,
-            vectors_config=models.VectorParams(size=1536, distance=models.Distance.COSINE),
+            vectors_config=models.VectorParams(size=4096, distance=models.Distance.COSINE),
         )
         logger.info(f"SUCCESS: Collection {cfg.qdrant.collection_name_openai} created.")
     vector_db = Qdrant(client=qdrant_client, collection_name=cfg.qdrant.collection_name_openai, embeddings=embedding)
