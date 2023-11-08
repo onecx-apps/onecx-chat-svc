@@ -17,8 +17,7 @@ RUN pip3 install -r requirements.txt
 COPY . /app
 
 # Expose the ports that your app uses
-EXPOSE 8001
-EXPOSE 8501
+EXPOSE 8080
 
 # Add a command to run your application
-CMD ["bash", "-c", "uvicorn agent.api:app --host 0.0.0.0 --port 8001 & streamlit run gui.py"]
+CMD ["bash", "-c", "uvicorn agent.api:app --host 0.0.0.0 --port 8080"]
