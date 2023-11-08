@@ -17,7 +17,7 @@ RUN pip3 install -r requirements.txt
 COPY . /app
 
 # Expose the ports that your app uses
-EXPOSE 80
+EXPOSE 8001
 
 # Add a command to run your application
-CMD ["bash", "-c", "uvicorn agent.api:app --host 0.0.0.0 --port 80"]
+CMD ["bash", "-c", "uvicorn agent.api:app --host 0.0.0.0 --port 8001"]
