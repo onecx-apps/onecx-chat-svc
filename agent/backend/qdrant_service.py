@@ -16,7 +16,7 @@ def get_qdrant_client() -> QdrantClient:
   
     try:
 
-        collection_name = "openai"
+        collection_name = "llama2"
         qdrant_client.get_collection(collection_name)
         logger.info(f"SUCCESS: Collection {collection_name} already exists.")
     except Exception:
