@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+LLAMA_URL = os.getenv("LLAMA_URL")
+LLAMA_PORT = os.getenv("LLAMA_PORT")
 
 channeling_system_message = """ You are a Chat Assistant which helps the user to clarify questions."""
 
@@ -49,7 +51,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     :return: Qdrant DB connection
     :rtype: Qdrant
     """
-    embedding = OllamaEmbeddings(base_url="http://ollama.one-cx.org", model="llama2")
+    embedding = OllamaEmbeddings(base_url="http://" + LLAMA_URL + ":" + LLAMA_PORT, model="llama2")
     qdrant_client = QdrantClient(os.getenv("QDRANT_URL",cfg.qdrant.url), port=os.getenv("QDRANT_PORT",cfg.qdrant.port), api_key=os.getenv("QDRANT_API_KEY"), prefer_grpc=cfg.qdrant.prefer_grpc)
     try: 
         qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name_llama2)  
@@ -80,7 +82,7 @@ def summarize_text_llama2(text: str, cfg: DictConfig) -> str:
     prompt = generate_prompt(prompt_name="llama2-summarization.j2", text=text, language="de")
 
     llm = ChatOllama(
-    base_url="http://ollama.one-cx.org",
+    base_url="http://" + LLAMA_URL + ":" + LLAMA_PORT,
     model="llama2",
     verbose=True
     )
