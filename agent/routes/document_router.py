@@ -14,7 +14,7 @@ from agent.backend.llama2_service import (
 document_router = APIRouter(tags=["document"])
 
 cloud_service = CloudServiceFactory(os.getenv("CLOUD_PROVIDER"))
-local_file_path = "data/"
+local_file_path = "resources/"
 
 #####qdrant rest services
 @document_router.get("/embeddings/importDocuments")
@@ -47,7 +47,7 @@ async def upload_document(file: UploadFile) -> UploadFileDTO:
     # Create temporary upload directory until uploaded file is embedded
     temp_dir = tempfile.TemporaryDirectory()
     logger.info(f"Tempdir created: {temp_dir.name}")
-    destination_path = os.path.join(local_file_path, file.filename)
+    destination_path = os.path.join(temp_dir.name, file.filename)
     
     # Write received file to disk chunked
     async with aiofiles.open(destination_path, "wb") as out_file:

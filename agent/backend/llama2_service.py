@@ -285,8 +285,22 @@ def chat_llama2(documents: list[tuple[LangchainDocument, float]], messages: any,
                 text = " ".join(texts)
             meta_data = [doc[0].metadata for doc in documents]
     else:
-        text = ""
-        meta_data=[]
+                # if the list of documents contains only one document extract the text directly
+        if len(documents) == 1:
+            text = documents[0][0].page_content
+            meta_data = documents[0][0].metadata
+
+        else:
+            # extract the text from the documents
+            texts = [doc[0].page_content for doc in documents]
+            if summarization:
+                # call summarization
+                logger.info(f"woudl call a summary here")
+
+            else:
+                # combine the texts to one text
+                text = " ".join(texts)
+            meta_data = [doc[0].metadata for doc in documents]
     
     answer=""
     try:
