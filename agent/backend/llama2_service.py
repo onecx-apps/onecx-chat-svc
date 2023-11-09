@@ -1,11 +1,9 @@
 import os
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import openai
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.document_loaders import DirectoryLoader, PyPDFLoader
-from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Qdrant
 from loguru import logger
 from omegaconf import DictConfig
@@ -14,18 +12,13 @@ from agent.utils.configuration import load_config
 from agent.utils.utility import generate_prompt
 from langchain.docstore.document import Document as LangchainDocument
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
 from qdrant_client.http import models
 import logging
 from agent.backend.qdrant_service import get_qdrant_client
 
 from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain.embeddings import OllamaEmbeddings
-from langchain.chat_models import ChatOllama
-from langchain.callbacks.manager import CallbackManager
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler                                  
-
-
+from langchain.chat_models import ChatOllama                                
 
 
 logging.basicConfig(level=logging.INFO)
@@ -56,7 +49,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     :return: Qdrant DB connection
     :rtype: Qdrant
     """
-    embedding = OllamaEmbeddings(base_url="http://localhost:11434", model="llama2")
+    embedding = OllamaEmbeddings(base_url="http://ollama.one-cx.org", model="llama2")
     qdrant_client = QdrantClient(os.getenv("QDRANT_URL",cfg.qdrant.url), port=os.getenv("QDRANT_PORT",cfg.qdrant.port), api_key=os.getenv("QDRANT_API_KEY"), prefer_grpc=cfg.qdrant.prefer_grpc)
     try: 
         qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name_llama2)  
@@ -72,6 +65,8 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     return vector_db
 
 
+
+#just for tests or future summaries when the prompt gets too long
 @load_config(location="config/ai/llama2.yml")
 def summarize_text_llama2(text: str, cfg: DictConfig) -> str:
     """Summarizes the given text using the llama2 API.
@@ -85,7 +80,7 @@ def summarize_text_llama2(text: str, cfg: DictConfig) -> str:
     prompt = generate_prompt(prompt_name="llama2-summarization.j2", text=text, language="de")
 
     llm = ChatOllama(
-    base_url="http://localhost:11434",
+    base_url="http://ollama.one-cx.org",
     model="llama2",
     verbose=True
     )
@@ -240,7 +235,7 @@ def send_chat_completion_llama2(text: str, query: str, cfg: DictConfig, conversa
     logger.info(f"DEBUG: This is the filled prompt before request: {prompt}")
 
     llm = ChatOllama(
-    base_url="http://localhost:11434",
+    base_url="http://ollama.one-cx.org",
     model="llama2",
     verbose=True
     )
@@ -254,8 +249,8 @@ def send_chat_completion_llama2(text: str, query: str, cfg: DictConfig, conversa
         messages=messagesBaseFormat,
     )
 
-    logger.info(response)
-    logger.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@after we got a response@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    logger.debug(f"DEBUG: This is the answer after request: {response}")
+    
     return response.content
 
 def chat_llama2(documents: list[tuple[LangchainDocument, float]], messages: any, query: str, conversation_type: str, summarization: bool = False) -> Tuple[str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
@@ -300,21 +295,11 @@ def chat_llama2(documents: list[tuple[LangchainDocument, float]], messages: any,
         logger.info(f"DEBUG: This is the answer after request: {answer}")
 
     except ValueError as e:
-        # if the code is PROMPT_TOO_LONG, split it into chunks
-        
-        logger.info("DEBUG: Error found. Summarizing again.")
-
-        # summarize the text
-        short_text = summarize_text_llama2(text)
-
-        # generate the prompt
-        prompt = generate_prompt("llama2-qa.j2", text=short_text, query=query)
-
-        # call the luminous api
-        answer = summarize_text_llama2(prompt)
-
-    # extract the answer
-    #logger.info(f"DEBUG: This is the final answer: {answer}")
+        #when prompt is too large it can be implemented here
+        logger.debug("DEBUG: Error found.")
+        logger.error(e)
+        answer = "Error"
+    logger.debug(f"DEBUG: This is the final answer: {answer}")
     
     return answer, meta_data
 
