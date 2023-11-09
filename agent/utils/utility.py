@@ -36,7 +36,7 @@ def combine_text_from_list(input_list: list) -> str:
     return combined_text
 
 
-def generate_prompt(prompt_name: str, text: str, query: str = "", language: str = "de") -> str:
+def generate_prompt(prompt_name: str, text: str, query: str = "", system: str = "", language: str = "de") -> str:
     """Generates a prompt for the Luminous API using a Jinja template.
 
     Args:
@@ -67,9 +67,9 @@ def generate_prompt(prompt_name: str, text: str, query: str = "", language: str 
     # replace the value text with jinja
     # Render the template with your variable
     if query:
-        prompt_text = prompt.render(text=text, query=query)
+        prompt_text = prompt.render(text=text, query=query, system=system)
     else:
-        prompt_text = prompt.render(text=text)
+        prompt_text = prompt.render(text=text, system=system)
 
     logger.info(f"DEBUG: This is the prompt after inserting: {prompt_text}")
     return prompt_text
