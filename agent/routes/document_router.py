@@ -7,8 +7,8 @@ from loguru import logger
 from typing import List
 from ..backend.cloud.cloud_service_factory import CloudServiceFactory
 
-from agent.backend.llama2_service import (
-    embedd_documents_llama2
+from agent.backend.ollama_service import (
+    embedd_documents_ollama
 )
 
 document_router = APIRouter(tags=["document"])
@@ -27,7 +27,7 @@ def import_documents():
     # Ensure the destination folder exists
     cloud_service.download_files_from_bucket(bucket_name, local_file_path)
 
-    embedd_documents_llama2(dir=local_file_path)
+    embedd_documents_ollama(dir=local_file_path)
 
     # Cleanup: Remove existing files in the destination folder
     for file_name in os.listdir(local_file_path):
@@ -54,7 +54,7 @@ async def upload_document(file: UploadFile) -> UploadFileDTO:
         while content := await file.read(1024):
             await out_file.write(content)
     
-    embedd_documents_llama2(dir=temp_dir.name)
+    embedd_documents_ollama(dir=temp_dir.name)
 
     # Cleanup
     temp_dir.cleanup()

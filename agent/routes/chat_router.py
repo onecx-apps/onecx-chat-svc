@@ -7,9 +7,9 @@ import agent.data_model.response_model as Response
 from loguru import logger
 
 
-from agent.backend.llama2_service import (
-    search_documents_llama2,
-    chat_llama2,
+from agent.backend.ollama_service import (
+    search_documents_ollama,
+    chat_ollama,
     channeling_system_message,
     q_and_a_system_message
 )
@@ -72,8 +72,8 @@ async def chat_with_bot(chat_message: ChatMessageDTO) -> ChatMessageDTO:
     conversation["history"].append(message_dictDTO)
 
     #response bot
-    documents = search_documents_llama2(query=message_dict["message"], amount=1)
-    answer, meta_data = chat_llama2(query=message_dict["message"], documents=documents, conversation_type=conversation["conversationType"], messages=chatCompletionArr)
+    documents = search_documents_ollama(query=message_dict["message"], amount=1)
+    answer, meta_data = chat_ollama(query=message_dict["message"], documents=documents, conversation_type=conversation["conversationType"], messages=chatCompletionArr)
     botResponse = ChatMessageDTO(conversationId=chat_message.conversationId, correlationId=message_dict["correlationId"], message=answer, type=MessageType.ASSISTANT, creationDate=int(time.time()))
     conversation["history"].append(botResponse)
     return botResponse

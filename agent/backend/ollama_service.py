@@ -26,19 +26,13 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-LLAMA_URL = os.getenv("LLAMA_URL")
-LLAMA_PORT = os.getenv("LLAMA_PORT")
+OLLAMA_URL = os.getenv("OLLAMA_URL")
+OLLAMA_PORT = os.getenv("OLLAMA_PORT")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
 
-channeling_system_message = """ You are a Chat Assistant which helps the user to clarify questions."""
+channeling_system_message = """Du bist ein hilfreicher Assistent. Für die folgende Aufgabe stehen dir zwischen den tags BEGININPUT und ENDINPUT mehrere Quellen zur Verfügung. Metadaten zu den einzelnen Quellen wie Autor, URL o.ä. sind zwischen BEGINCONTEXT und ENDCONTEXT zu finden, danach folgt der Text der Quelle. Die eigentliche Aufgabe oder Frage ist zwischen BEGININSTRUCTION und ENDINCSTRUCTION zu finden. Beantworte diese wortwörtlich mit einem Zitat aus den Quellen. Sollten diese keine Antwort enthalten, antworte, dass auf Basis der gegebenen Informationen keine Antwort möglich ist! USER: BEGININPUT"""
 
-q_and_a_system_message = """
-You are a Chat Assistant which helps the user to clarify questions.
-
-You will be provided with a document delimited by triple quotes and the users input.
-Your task is to help the user by using only the provided document.
-If the document does not contain the information needed to answer this question then simply tell the user that you cant answer the question based on the additional provided knowledge and then you answer it without the provided document.
-Alawys reply to the user in the language provided in the users input.
-"""
+q_and_a_system_message = """Du bist ein hilfreicher Assistent. Für die folgende Aufgabe stehen dir zwischen den tags BEGININPUT und ENDINPUT mehrere Quellen zur Verfügung. Metadaten zu den einzelnen Quellen wie Autor, URL o.ä. sind zwischen BEGINCONTEXT und ENDCONTEXT zu finden, danach folgt der Text der Quelle. Die eigentliche Aufgabe oder Frage ist zwischen BEGININSTRUCTION und ENDINCSTRUCTION zu finden. Beantworte diese wortwörtlich mit einem Zitat aus den Quellen. Sollten diese keine Antwort enthalten, antworte, dass auf Basis der gegebenen Informationen keine Antwort möglich ist! USER: BEGININPUT"""
 
 
 
@@ -51,7 +45,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     :return: Qdrant DB connection
     :rtype: Qdrant
     """
-    embedding = OllamaEmbeddings(base_url="http://" + LLAMA_URL + ":" + LLAMA_PORT, model="llama2")
+    embedding = OllamaEmbeddings(base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT, model=OLLAMA_MODEL)
     qdrant_client = QdrantClient(os.getenv("QDRANT_URL",cfg.qdrant.url), port=os.getenv("QDRANT_PORT",cfg.qdrant.port), api_key=os.getenv("QDRANT_API_KEY"), prefer_grpc=cfg.qdrant.prefer_grpc)
     try: 
         qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name_llama2)  
@@ -70,7 +64,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
 
 #just for tests or future summaries when the prompt gets too long
 @load_config(location="config/ai/llama2.yml")
-def summarize_text_llama2(text: str, cfg: DictConfig) -> str:
+def summarize_text_ollama(text: str, cfg: DictConfig) -> str:
     """Summarizes the given text using the llama2 API.
 
     Args:
@@ -79,11 +73,11 @@ def summarize_text_llama2(text: str, cfg: DictConfig) -> str:
     Returns:
         str: The summary of the text.
     """
-    prompt = generate_prompt(prompt_name="llama2-summarization.j2", text=text, language="de")
+    prompt = generate_prompt(prompt_name=f"{OLLAMA_MODEL}-summarization.j2", text=text, language="de")
 
     llm = ChatOllama(
-    base_url="http://" + LLAMA_URL + ":" + LLAMA_PORT,
-    model="llama2",
+    base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT,
+    model=OLLAMA_MODEL,
     verbose=True
     )
 
@@ -92,7 +86,7 @@ def summarize_text_llama2(text: str, cfg: DictConfig) -> str:
     return response
 
 
-def embedd_documents_llama2(dir: str) -> None:
+def embedd_documents_ollama(dir: str) -> None:
     """Embeds the documents in the given directory in the llama2 database.
 
     This method uses the Directory Loader for PDFs and the PyPDFLoader to load the documents.
@@ -122,7 +116,7 @@ def embedd_documents_llama2(dir: str) -> None:
     logger.info("SUCCESS: Texts embedded.")
 
 
-def embedd_text_llama2(text: str, file_name: str, seperator: str) -> None:
+def embedd_text_ollama(text: str, file_name: str, seperator: str) -> None:
     """Embeds the given text in the llama2 database.
 
     Args:
@@ -151,7 +145,7 @@ def embedd_text_llama2(text: str, file_name: str, seperator: str) -> None:
     logger.info("SUCCESS: Text embedded.")
 
 
-def embedd_text_files_llama2(folder: str, seperator: str) -> None:
+def embedd_text_files_ollama(folder: str, seperator: str) -> None:
     """Embeds text files in the llama2 database.
 
     Args:
@@ -196,7 +190,7 @@ def embedd_text_files_llama2(folder: str, seperator: str) -> None:
     
 
 
-def search_documents_llama2(query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
+def search_documents_ollama(query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
     """Searches the documents in the Qdrant DB with a specific query.
 
     Args:
@@ -216,7 +210,7 @@ def search_documents_llama2(query: str, amount: int, collection_name: Optional[s
     return docs
 
 @load_config(location="config/ai/llama2.yml")
-def send_chat_completion_llama2(text: str, query: str, cfg: DictConfig, conversation_type: str, messages: any) -> str:
+def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversation_type: str, messages: any) -> str:
     """Sent completion request to llama2 API.
 
     Args:
@@ -230,15 +224,15 @@ def send_chat_completion_llama2(text: str, query: str, cfg: DictConfig, conversa
 
     #fill the prompt if not q and a then it will use channeling with the documents
     if conversation_type == "CHANNELING":
-        prompt = generate_prompt(prompt_name="llama2-channeling.j2", text=text, query=query, system=channeling_system_message, language="de")
+        prompt = generate_prompt(prompt_name=f"{OLLAMA_MODEL}-channeling.j2", text=text, query=query, system=channeling_system_message, language="de")
     else:
-        prompt = generate_prompt(prompt_name="llama2-qa.j2", text=text, query=query, system=q_and_a_system_message, language="de")
+        prompt = generate_prompt(prompt_name=f"{OLLAMA_MODEL}-qa.j2", text=text, query=query, system=q_and_a_system_message, language="de")
     messages.append({"role": "user", "content": prompt})
     logger.info(f"DEBUG: This is the filled prompt before request: {prompt}")
 
     llm = ChatOllama(
-    base_url="http://" + LLAMA_URL + ":" + LLAMA_PORT,
-    model="llama2",
+    base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT,
+    model=OLLAMA_MODEL,
     verbose=True
     )
 
@@ -255,7 +249,7 @@ def send_chat_completion_llama2(text: str, query: str, cfg: DictConfig, conversa
     
     return response.content
 
-def chat_llama2(documents: list[tuple[LangchainDocument, float]], messages: any, query: str, conversation_type: str, summarization: bool = False) -> Tuple[str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
+def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any, query: str, conversation_type: str, summarization: bool = False) -> Tuple[str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
     """QA takes a list of documents and returns a list of answers.
 
     Args:
@@ -280,7 +274,7 @@ def chat_llama2(documents: list[tuple[LangchainDocument, float]], messages: any,
                 # call summarization
                 text = ""
                 for t in texts:
-                    text += summarize_text_llama2(t)
+                    text += summarize_text_ollama(t)
 
             else:
                 # combine the texts to one text
@@ -307,7 +301,7 @@ def chat_llama2(documents: list[tuple[LangchainDocument, float]], messages: any,
     answer=""
     try:
         # call the gpt api
-        answer = send_chat_completion_llama2(text=text, query=query, conversation_type=conversation_type, messages=messages)
+        answer = send_chat_completion_ollama(text=text, query=query, conversation_type=conversation_type, messages=messages)
         logger.info(f"DEBUG: This is the answer after request: {answer}")
 
     except ValueError as e:
