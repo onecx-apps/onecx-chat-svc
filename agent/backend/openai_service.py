@@ -19,7 +19,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from qdrant_client.http import models
 import logging
 
-from agent.backend.qdrant_service import get_qdrant_client
+#from agent.backend.qdrant_service import get_qdrant_client
 
 
 logging.basicConfig(level=logging.INFO)

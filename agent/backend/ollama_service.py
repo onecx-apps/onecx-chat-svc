@@ -14,10 +14,10 @@ from langchain.docstore.document import Document as LangchainDocument
 from langchain.text_splitter import CharacterTextSplitter
 from qdrant_client.http import models
 import logging
-from agent.backend.qdrant_service import get_qdrant_client
+#from agent.backend.qdrant_service import get_qdrant_client
 
 from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
-from langchain.embeddings import OllamaEmbeddings
+from langchain.embeddings import SentenceTransformerEmbeddings
 from langchain.chat_models import ChatOllama                                
 
 
@@ -29,6 +29,7 @@ load_dotenv()
 OLLAMA_URL = os.getenv("OLLAMA_URL")
 OLLAMA_PORT = os.getenv("OLLAMA_PORT")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 
 channeling_system_message = """Du bist ein hilfreicher Assistent. Für die folgende Aufgabe stehen dir zwischen den tags BEGININPUT und ENDINPUT mehrere Quellen zur Verfügung. Metadaten zu den einzelnen Quellen wie Autor, URL o.ä. sind zwischen BEGINCONTEXT und ENDCONTEXT zu finden, danach folgt der Text der Quelle. Die eigentliche Aufgabe oder Frage ist zwischen BEGININSTRUCTION und ENDINCSTRUCTION zu finden. Beantworte diese wortwörtlich mit einem Zitat aus den Quellen. Sollten diese keine Antwort enthalten, antworte, dass auf Basis der gegebenen Informationen keine Antwort möglich ist! USER: BEGININPUT"""
 
@@ -45,7 +46,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     :return: Qdrant DB connection
     :rtype: Qdrant
     """
-    embedding = OllamaEmbeddings(base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT, model=OLLAMA_MODEL)
+    embedding = SentenceTransformerEmbeddings(model_name=EMBEDDING_MODEL)#OllamaEmbeddings(base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT, model=OLLAMA_MODEL)
     qdrant_client = QdrantClient(os.getenv("QDRANT_URL",cfg.qdrant.url), port=os.getenv("QDRANT_PORT",cfg.qdrant.port), api_key=os.getenv("QDRANT_API_KEY"), prefer_grpc=cfg.qdrant.prefer_grpc)
     try: 
         qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name_llama2)  
@@ -53,7 +54,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     except Exception:
         qdrant_client.recreate_collection(
             collection_name=cfg.qdrant.collection_name_llama2,
-            vectors_config=models.VectorParams(size=4096, distance=models.Distance.COSINE),
+            vectors_config=models.VectorParams(size=len(embedding.embed_query("Test text")), distance=models.Distance.COSINE),
         )
         logger.info(f"SUCCESS: Collection {cfg.qdrant.collection_name_llama2} created.")
     vector_db = Qdrant(client=qdrant_client, collection_name=cfg.qdrant.collection_name_llama2, embeddings=embedding)
