@@ -242,13 +242,14 @@ def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversa
                       else SystemMessage(content=m["content"], additional_kwargs={})
                       for m in messages]
 
-    response = llm.predict_messages(
-        messages=messagesBaseFormat,
+    response = llm.predict(
+        text=prompt,
+        raw=True
     )
 
     logger.debug(f"DEBUG: This is the answer after request: {response}")
     
-    return response.content
+    return response
 
 def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any, query: str, conversation_type: str, summarization: bool = False) -> Tuple[str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
     """QA takes a list of documents and returns a list of answers.
