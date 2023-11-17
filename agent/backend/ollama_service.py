@@ -76,9 +76,11 @@ def summarize_text_ollama(text: str, cfg: DictConfig) -> str:
     """
     prompt = generate_prompt(prompt_name=f"{OLLAMA_MODEL}-summarization.j2", text=text, language="de")
 
+    ollama_model = f"{os.environ.get('OLLAMA_MODEL')}:{os.environ.get('OLLAMA_MODEL_VERSION')}" if os.environ.get('OLLAMA_MODEL_VERSION') else os.environ.get('OLLAMA_MODEL')
+
     llm = ChatOllama(
     base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT,
-    model=OLLAMA_MODEL,
+    model=ollama_model,
     verbose=True
     )
 
@@ -231,9 +233,12 @@ def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversa
     messages.append({"role": "user", "content": prompt})
     logger.info(f"DEBUG: This is the filled prompt before request: {prompt}")
 
+
+    ollama_model = f"{os.environ.get('OLLAMA_MODEL')}:{os.environ.get('OLLAMA_MODEL_VERSION')}" if os.environ.get('OLLAMA_MODEL_VERSION') else os.environ.get('OLLAMA_MODEL')
+
     llm = ChatOllama(
     base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT,
-    model=OLLAMA_MODEL,
+    model=ollama_model,
     verbose=True
     )
 
