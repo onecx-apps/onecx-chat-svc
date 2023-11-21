@@ -35,7 +35,11 @@ channeling_system_message = """Du bist ein hilfreicher Assistent. Für die folge
 
 #q_and_a_system_message = """Du bist ein hilfreicher Assistent. Für die folgende Aufgabe stehen dir zwischen den tags BEGININPUT und ENDINPUT mehrere Quellen zur Verfügung. Metadaten zu den einzelnen Quellen wie Autor, URL o.ä. sind zwischen BEGINCONTEXT und ENDCONTEXT zu finden, danach folgt der Text der Quelle. Die eigentliche Aufgabe oder Frage ist zwischen BEGININSTRUCTION und ENDINCSTRUCTION zu finden. Beantworte diese aus den Quellen. Sollten diese keine Antwort enthalten, antworte, dass auf Basis der gegebenen Informationen keine Antwort möglich ist! USER: BEGININPUT"""
 
-q_and_a_system_message = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. Answer in the language you got asked."""
+#q_and_a_system_message = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. Answer in the language you got asked."""
+
+q_and_a_system_message = """Im folgenden wird eine passende Antwortmöglichkeit zu einer Frage gesucht."""
+
+
 
 
 @load_config(location="config/db.yml")
@@ -250,7 +254,7 @@ def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversa
 
     response = llm.predict(
         text=prompt,
-        raw=False
+        raw=True
     )
 
     logger.debug(f"DEBUG: This is the answer after request: {response}")
@@ -309,6 +313,9 @@ def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any,
     answer=""
     try:
         # call the gpt api
+
+        text = """1. Löwen 2. Giraffen 3. Leoparden 4. Geparden Text: Safaris sind vielleicht die größte Touristenattraktion in Afrika und der Höhepunkt für viele Besucher. Der Begriff Safari bezeichnet im üblichen Sprachgebrauch eine Landreise, um die überwältigende afrikanische Tierwelt zu beobachten, besonders in der Savanne. Einige Tiere, wie Elefanten und Giraffen, neigen dazu, sich dicht an Autos anzunähern, und die Standardausrüstung ermöglicht eine gute Sicht. Löwen, Geparden und Leoparden sind oft scheu und Sie können sie mit einem Fernglas besser beobachten. Eine Fußsafari (auch „Buschgang“, „Wandersafari“ oder „Footing“ genannt) besteht aus einer Wanderung, die entweder ein paar Stunden oder mehrere Tage dauert."""
+
         answer = send_chat_completion_ollama(text=text, query=query, conversation_type=conversation_type, messages=messages)
         logger.info(f"DEBUG: This is the answer after request: {answer}")
 
