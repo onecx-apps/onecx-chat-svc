@@ -18,7 +18,7 @@ class ConversationType(str, Enum):
 class ChatMessageDTO(BaseModel):
     conversationId: str = Field(None, title="conversationId", description="The unique id for the whole user converstation.")
     correlationId: str = Field(None, title="correlationId", description="The unique id for vorrelating messages.")
-    message: str = Field(None, description="the message", max_length=4000)
+    message: str = Field(None, description="the message", max_length=40000)
     type: MessageType = Field(None, description="The enum message type")
     creationDate: int = Field(None, description="The timestamp in milliseconds")
 
