@@ -250,7 +250,7 @@ def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversa
 
     response = llm.predict(
         text=prompt,
-        raw=True
+        raw=False
     )
 
     logger.debug(f"DEBUG: This is the answer after request: {response}")
