@@ -1,5 +1,6 @@
 """This is the utility module."""
 import os
+import re
 import uuid
 
 from jinja2 import Template
@@ -78,7 +79,7 @@ def generate_prompt(prompt_name: str, text: str, query: str = "", system: str = 
         else:
             prompt_text = prompt.render(text=text, system=system)
 
-    logger.info(f"DEBUG: This is the prompt after inserting: {prompt_text}")
+    #logger.info(f"DEBUG: This is the prompt after inserting: {prompt_text}")
     return prompt_text
 
 
@@ -130,6 +131,13 @@ def validate_token(token: str | None, llm_backend: str, aleph_alpha_key: str | N
     token = get_token(token, llm_backend, aleph_alpha_key)
 
     return token
+
+
+
+def replace_multiple_whitespaces(text):
+    # Use regular expression to replace multiple whitespaces with a single whitespace
+    cleaned_text = re.sub(r'\s+', ' ', text)
+    return cleaned_text
 
 
 if __name__ == "__main__":

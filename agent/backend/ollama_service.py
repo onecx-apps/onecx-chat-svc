@@ -1,10 +1,16 @@
 import os
 from typing import Any, Dict, List, Optional, Tuple, Union
-
+from langchain.document_loaders import TextLoader
+from langchain.retrievers.document_compressors import LLMChainExtractor
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.vectorstores import Qdrant
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import CohereRerank
+from langchain.document_transformers import EmbeddingsRedundantFilter
+from langchain.retrievers.document_compressors import DocumentCompressorPipeline
+from langchain.retrievers.document_compressors import EmbeddingsFilter
 from loguru import logger
 from omegaconf import DictConfig
 from qdrant_client import QdrantClient
@@ -13,16 +19,13 @@ from agent.utils.utility import generate_prompt
 from langchain.docstore.document import Document as LangchainDocument
 from langchain.text_splitter import CharacterTextSplitter
 from qdrant_client.http import models
-import logging
+
+from agent.utils.utility import replace_multiple_whitespaces
 #from agent.backend.qdrant_service import get_qdrant_client
 
 from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain.embeddings import SentenceTransformerEmbeddings
 from langchain.chat_models import ChatOllama                                
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -30,6 +33,7 @@ OLLAMA_URL = os.getenv("OLLAMA_URL")
 OLLAMA_PORT = os.getenv("OLLAMA_PORT")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
+os.environ["COHERE_API_KEY"] = os.getenv("COHERE_API_KEY")
 
 channeling_system_message = """Du bist ein hilfreicher Assistent. Für die folgende Aufgabe stehen dir zwischen den tags BEGININPUT und ENDINPUT mehrere Quellen zur Verfügung. Metadaten zu den einzelnen Quellen wie Autor, URL o.ä. sind zwischen BEGINCONTEXT und ENDCONTEXT zu finden, danach folgt der Text der Quelle. Die eigentliche Aufgabe oder Frage ist zwischen BEGININSTRUCTION und ENDINCSTRUCTION zu finden. Beantworte diese aus den Quellen. Sollten diese keine Antwort enthalten, antworte, dass auf Basis der gegebenen Informationen keine Antwort möglich ist! USER: BEGININPUT"""
 
@@ -50,7 +54,7 @@ def get_db_connection(cfg: DictConfig) -> Qdrant:
     :return: Qdrant DB connection
     :rtype: Qdrant
     """
-    embedding = SentenceTransformerEmbeddings(model_name=EMBEDDING_MODEL)#OllamaEmbeddings(base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT, model=OLLAMA_MODEL)
+    embedding = SentenceTransformerEmbeddings(model_name=EMBEDDING_MODEL) #OllamaEmbeddings(base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT, model=OLLAMA_MODEL)
     qdrant_client = QdrantClient(os.getenv("QDRANT_URL",cfg.qdrant.url), port=os.getenv("QDRANT_PORT",cfg.qdrant.port), api_key=os.getenv("QDRANT_API_KEY"), prefer_grpc=cfg.qdrant.prefer_grpc)
     try: 
         qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name_llama2)  
@@ -195,8 +199,7 @@ def embedd_text_files_ollama(folder: str, seperator: str) -> None:
 
     logger.info("SUCCESS: Text embedded.")
     
-
-
+ 
 def search_documents_ollama(query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
     """Searches the documents in the Qdrant DB with a specific query.
 
@@ -210,11 +213,37 @@ def search_documents_ollama(query: str, amount: int, collection_name: Optional[s
     vector_db = get_db_connection()
 
     docs = vector_db.similarity_search_with_score(query, k=amount)
-    logger.info("SUCCESS: Documents found.")
+    
 
-    logger.info(f"These are the docs found after similarity_search_with_score: {docs}")
+    logger.info("SUCCESS: Documents found after similarity_search_with_score.")
+    #logger.info(f"These are the docs found after similarity_search_with_score: {docs}")
 
-    return docs
+
+    if os.environ.get('ACTIVATE_RERANKER') == "True":
+
+        embedding = SentenceTransformerEmbeddings(model_name=EMBEDDING_MODEL)
+        filtered_docs = [t[0] for t in docs]
+        retriever = vector_db.from_documents(filtered_docs, embedding, api_key=os.environ.get('QDRANT_API_KEY'), url=os.environ.get('QDRANT_URL')).as_retriever()
+
+        #cohere multi lang rerank model only supports none-english documents
+        rerank_compressor = CohereRerank(user_agent="my-app", model="rerank-multilingual-v2.0")
+        splitter = CharacterTextSplitter(chunk_size=120, chunk_overlap=0, separator=". ")
+        redundant_filter = EmbeddingsRedundantFilter(embeddings=embedding)
+        relevant_filter = EmbeddingsFilter(embeddings=embedding)
+        pipeline_compressor = DocumentCompressorPipeline(
+            transformers=[splitter, redundant_filter, relevant_filter, rerank_compressor]
+        )
+        compression_retriever1 = ContextualCompressionRetriever(base_compressor=pipeline_compressor, base_retriever=retriever)
+
+        compressed_docs = compression_retriever1.get_relevant_documents(query)
+
+        for docu in compressed_docs:
+            logger.info(f"These are the docs found after reranking: {replace_multiple_whitespaces(docu.page_content)}") 
+
+        return compressed_docs
+    else:
+        filtered_docs = [t[0] for t in docs]
+        return filtered_docs
 
 @load_config(location="config/ai/llama2.yml")
 def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversation_type: str, messages: any) -> str:
@@ -255,8 +284,6 @@ def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversa
         text=prompt,
         raw=True
     )
-
-    logger.debug(f"DEBUG: This is the answer after request: {response}")
     
     return response
 
@@ -280,26 +307,7 @@ def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any,
 
         else:
             # extract the text from the documents
-            texts = [doc[0].page_content for doc in documents]
-            if summarization:
-                # call summarization
-                text = ""
-                for t in texts:
-                    text += summarize_text_ollama(t)
-
-            else:
-                # combine the texts to one text
-                text = " ".join(texts)
-            meta_data = [doc[0].metadata for doc in documents]
-    else:
-                # if the list of documents contains only one document extract the text directly
-        if len(documents) == 1:
-            text = documents[0][0].page_content
-            meta_data = documents[0][0].metadata
-
-        else:
-            # extract the text from the documents
-            texts = [doc[0].page_content for doc in documents]
+            texts = [replace_multiple_whitespaces(doc.page_content) for doc in documents]
             if summarization:
                 # call summarization
                 logger.info(f"woudl call a summary here")
@@ -307,21 +315,37 @@ def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any,
             else:
                 # combine the texts to one text
                 text = " ".join(texts)
-            meta_data = [doc[0].metadata for doc in documents]
+            meta_data = [doc.metadata for doc in documents]
+    else:
+        # if the list of documents contains only one document extract the text directly
+        if len(documents) == 1:
+            text = documents[0][0].page_content
+            meta_data = documents[0][0].metadata
+
+        else:
+            # extract the text from the documents
+            texts = [replace_multiple_whitespaces(doc.page_content) for doc in documents]
+            if summarization:
+                # call summarization
+                logger.info(f"woudl call a summary here")
+
+            else:
+                # combine the texts to one text
+                text = " ".join(texts)
+            meta_data = [doc.metadata for doc in documents]
     
     answer=""
     try:
         # call the gpt api
 
         answer = send_chat_completion_ollama(text=text, query=query, conversation_type=conversation_type, messages=messages)
-        logger.info(f"DEBUG: This is the answer after request: {answer}")
 
     except ValueError as e:
         #when prompt is too large it can be implemented here
         logger.debug("DEBUG: Error found.")
         logger.error(e)
         answer = "Error"
-    logger.debug(f"DEBUG: This is the final answer: {answer}")
+    logger.debug(f"LLM response: {answer}")
     
     return answer, meta_data
 
