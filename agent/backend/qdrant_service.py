@@ -22,7 +22,7 @@ def get_qdrant_client() -> QdrantClient:
     except Exception:
         qdrant_client.recreate_collection(
             collection_name=collection_name,
-            vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE),
+            vectors_config=models.VectorParams(size=4096, distance=models.Distance.COSINE),
         )
         logger.info(f"SUCCESS: Collection {collection_name} created.")
 

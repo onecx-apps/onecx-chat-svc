@@ -72,7 +72,7 @@ def generate_prompt(prompt_name: str, text: str, query: str = "", system: str = 
     else:
         prompt_text = prompt.render(text=text, system=system)
 
-    logger.info(f"DEBUG: This is the prompt after inserting: {prompt_text}")
+    #logger.info(f"DEBUG: This is the prompt after inserting: {prompt_text}")
     return prompt_text
 
 
