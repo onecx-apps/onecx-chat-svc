@@ -51,25 +51,33 @@ def generate_prompt(prompt_name: str, text: str, query: str = "", system: str = 
     Raises:
         FileNotFoundError: If the specified prompt file cannot be found.
     """
-    try:
-        match language:
-            case "en":
-                lang = "en"
-            case "de":
-                lang = "de"
-            case _:
-                raise ValueError("Language not supported.")
-        with open(os.path.join("prompts", lang, prompt_name)) as f:
-            prompt = Template(f.read())
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Prompt file '{prompt_name}' not found.")
 
-    # replace the value text with jinja
-    # Render the template with your variable
-    if query:
-        prompt_text = prompt.render(text=text, query=query, system=system)
+
+    if os.environ.get('RAW_PROMPT',default = False):
+        logger.info(f"DEBUG: using raw input for llm without any template ")
+        prompt_text = prompt
+
     else:
-        prompt_text = prompt.render(text=text, system=system)
+        logger.info(f"DEBUG: using template for llm ")
+        try:
+            match language:
+                case "en":
+                    lang = "en"
+                case "de":
+                    lang = "de"
+                case _:
+                    raise ValueError("Language not supported.")
+            with open(os.path.join("prompts", lang, prompt_name)) as f:
+                prompt = Template(f.read())
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Prompt file '{prompt_name}' not found.")
+
+        # replace the value text with jinja
+        # Render the template with your variable
+        if query:
+            prompt_text = prompt.render(text=text, query=query, system=system)
+        else:
+            prompt_text = prompt.render(text=text, system=system)
 
     logger.info(f"DEBUG: This is the prompt after inserting: {prompt_text}")
     return prompt_text
