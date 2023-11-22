@@ -93,7 +93,7 @@ components:
           type: string
         message:
           type: string
-          maxLength: 4000
+          maxLength: 10000
         type:
           type: string
           enum: [SYSTEM, USER, ACTION]

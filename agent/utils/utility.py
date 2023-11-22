@@ -52,11 +52,10 @@ def generate_prompt(prompt_name: str, text: str, query: str = "", system: str = 
         FileNotFoundError: If the specified prompt file cannot be found.
     """
 
-
-    if os.environ.get('RAW_PROMPT',default = False):
+       
+    if os.environ.get('RAW_PROMPT',default = False) == True:
         logger.info(f"DEBUG: using raw input for llm without any template ")
-        prompt_text = prompt
-
+        prompt_text = query
     else:
         logger.info(f"DEBUG: using template for llm ")
         try:

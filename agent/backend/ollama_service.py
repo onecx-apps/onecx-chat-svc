@@ -37,7 +37,7 @@ channeling_system_message = """Du bist ein hilfreicher Assistent. Für die folge
 
 #q_and_a_system_message = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. Answer in the language you got asked."""
 
-q_and_a_system_message = os.getenv("Q_A_SYSTEM_MESSAGE",default="Du bist ein hilfreicher Assistent. Beantworte die FRAGE mit Hilfe des folgenden INPUT. ")
+q_and_a_system_message = os.getenv("Q_A_SYSTEM_MESSAGE",default="Du bist ein ehrlicher, respektvoller und ehrlicher Assistent. Zur Beantwortung der Frage nutzt du nur den Text, welcher zwischen <INPUT> und </INPUT> steht! Findest du keine Informationen im bereitgesetllten Test, so antwortest du mit 'Ich habe dazu keine Informationen'")
 
 
 
