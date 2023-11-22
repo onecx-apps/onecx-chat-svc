@@ -41,7 +41,7 @@ channeling_system_message = """Du bist ein hilfreicher Assistent. Für die folge
 
 #q_and_a_system_message = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. Answer in the language you got asked."""
 
-q_and_a_system_message = os.getenv("Q_A_SYSTEM_MESSAGE",default="Du bist ein ehrlicher, respektvoller und ehrlicher Assistent. Zur Beantwortung der Frage nutzt du nur den Text, welcher zwischen <INPUT> und </INPUT> steht! Findest du keine Informationen im bereitgesetllten Test, so antwortest du mit 'Ich habe dazu keine Informationen'")
+q_and_a_system_message = os.getenv("Q_A_SYSTEM_MESSAGE",default="Du bist ein ehrlicher, respektvoller und ehrlicher Assistent. Zur Beantwortung der Frage nutzt du nur den Text, welcher zwischen <INPUT> und </INPUT> steht! Findest du keine Informationen im bereitgesetllten Text, so antwortest du mit 'Ich habe dazu keine Informationen'")
 
 
 
@@ -223,7 +223,7 @@ def search_documents_ollama(query: str, amount: int, collection_name: Optional[s
 
         embedding = SentenceTransformerEmbeddings(model_name=EMBEDDING_MODEL)
         filtered_docs = [t[0] for t in docs]
-        retriever = vector_db.from_documents(filtered_docs, embedding, api_key=os.environ.get('QDRANT_API_KEY'), url=os.environ.get('QDRANT_URL')).as_retriever()
+        retriever = vector_db.from_documents(filtered_docs, embedding, api_key=os.environ.get('QDRANT_API_KEY'), url=os.environ.get('QDRANT_URL'), collection_name = "reranking").as_retriever()
 
         #cohere multi lang rerank model only supports none-english documents
         rerank_compressor = CohereRerank(user_agent="my-app", model="rerank-multilingual-v2.0")
