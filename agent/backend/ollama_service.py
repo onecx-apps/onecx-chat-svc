@@ -19,6 +19,7 @@ from agent.utils.utility import generate_prompt
 from langchain.docstore.document import Document as LangchainDocument
 from langchain.text_splitter import CharacterTextSplitter
 from qdrant_client.http import models
+import requests
 
 from agent.utils.utility import replace_multiple_whitespaces
 #from agent.backend.qdrant_service import get_qdrant_client
@@ -226,7 +227,7 @@ def search_documents_ollama(query: str, amount: int, collection_name: Optional[s
         retriever = vector_db.from_documents(filtered_docs, embedding, api_key=os.environ.get('QDRANT_API_KEY'), url=os.environ.get('QDRANT_URL')).as_retriever()
 
         #cohere multi lang rerank model only supports none-english documents
-        rerank_compressor = CohereRerank(user_agent="my-app", model="rerank-multilingual-v2.0")
+        rerank_compressor = CohereRerank(user_agent="my-app", model="rerank-multilingual-v2.0", top_n=1)
         splitter = CharacterTextSplitter(chunk_size=120, chunk_overlap=0, separator=". ")
         redundant_filter = EmbeddingsRedundantFilter(embeddings=embedding)
         relevant_filter = EmbeddingsFilter(embeddings=embedding)
@@ -269,25 +270,29 @@ def send_chat_completion_ollama(text: str, query: str, cfg: DictConfig, conversa
     
     ollama_model = f"{os.environ.get('OLLAMA_MODEL')}:{os.environ.get('OLLAMA_MODEL_VERSION')}" if os.environ.get('OLLAMA_MODEL_VERSION') else os.environ.get('OLLAMA_MODEL')
 
-    llm = ChatOllama(
-    base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT,
-    model=ollama_model,
-    verbose=True
-    )
+    # llm = ChatOllama(
+    # base_url="http://" + OLLAMA_URL + ":" + OLLAMA_PORT,
+    # model=ollama_model,
+    # verbose=True
+    # )
 
     messagesBaseFormat: List[BaseMessage] = [HumanMessage(content=m["content"], additional_kwargs={}) if m["role"] == "user"
                       else AIMessage(content=m["content"], additional_kwargs={}) if m["role"] == "assistant"
                       else SystemMessage(content=m["content"], additional_kwargs={})
                       for m in messages]
 
-    raw_mode = os.environ.get('OLLAMA_RAW_MODE', default = False).lower() in ['true']
+    raw_mode = os.environ.get('OLLAMA_RAW_MODE', default = "False").lower() in ['true']
 
-    response = llm.predict(
-        text=prompt,
-        raw=raw_mode
-        
-    )
+
+    response = generate_ollamaRequest(url_ollama_generateEndpoint="http://ollama.one-cx.org:80/api/generate",
+                                      model=os.environ.get('OLLAMA_MODEL'),
+                                      full_prompt=prompt)
+
+    # response = llm.generate(
+    #     messages=[messagesBaseFormat],        
+    # )
     
+    logger.info(f"DEBUG: response: {response}")
     return response
 
 def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any, query: str, conversation_type: str, summarization: bool = False) -> Tuple[str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
@@ -305,8 +310,9 @@ def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any,
     if conversation_type == "Q_AND_A":
         # if the list of documents contains only one document extract the text directly
         if len(documents) == 1:
-            text = documents[0][0].page_content
-            meta_data = documents[0][0].metadata
+            texts = [replace_multiple_whitespaces(doc.page_content) for doc in documents]
+            text = " ".join(texts)
+            meta_data = [doc.metadata for doc in documents]
 
         else:
             # extract the text from the documents
@@ -322,8 +328,9 @@ def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any,
     else:
         # if the list of documents contains only one document extract the text directly
         if len(documents) == 1:
-            text = documents[0][0].page_content
-            meta_data = documents[0][0].metadata
+            texts = [replace_multiple_whitespaces(doc.page_content) for doc in documents]
+            text = " ".join(texts)
+            meta_data = [doc.metadata for doc in documents]
 
         else:
             # extract the text from the documents
@@ -352,6 +359,27 @@ def chat_ollama(documents: list[tuple[LangchainDocument, float]], messages: any,
     
     return answer, meta_data
 
+
+def generate_ollamaRequest(url_ollama_generateEndpoint: str, model: str, full_prompt: str):
+    url = url_ollama_generateEndpoint
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "model": model,
+        "template": full_prompt,
+        "stream": False,
+        "options": {"stop": ["<|im_start|>", "<|im_end|>"]}
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+
+    if response.status_code == 200:
+        logger.debug("Request was successful!")
+        logger.debug("Response:")
+        logger.debug(response.json()["response"])
+    else:
+        logger.debug(f"Error {response.status_code}: {response.text}")
+
+    return response.json()["response"]
 
 
 
