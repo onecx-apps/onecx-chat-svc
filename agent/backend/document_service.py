@@ -21,7 +21,7 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 class DocumentService():
     def __init__(self):
         self.embedding_model = SentenceTransformerEmbeddings(model_name=EMBEDDING_MODEL)
-        self.vector_store = get_db_connection()
+        self.vector_store = get_db_connection(embedding_model=self.embedding_model)
         
     def embed_directory(self, dir: str) -> None:
         """Embeds the documents in the given directory in the llama2 database.
@@ -35,8 +35,6 @@ class DocumentService():
         Returns:
             None
         """
-        vector_db = get_db_connection()
-
         logger.info(f"Logged directory:  {dir}")
         loader = DirectoryLoader(dir, glob="*.pdf", loader_cls=PyPDFLoader)
         length_function = len
@@ -49,7 +47,7 @@ class DocumentService():
         logger.info(f"Loaded {len(docs)} documents.")
         text_list = [doc.page_content for doc in docs]
         metadata_list = [doc.metadata for doc in docs]
-        vector_db.add_texts(texts=text_list, metadatas=metadata_list)
+        self.vector_store.add_texts(texts=text_list, metadatas=metadata_list)
         logger.info("SUCCESS: Texts embedded.")
 
 

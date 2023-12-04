@@ -22,7 +22,7 @@ OLLAMA_URL = os.getenv("OLLAMA_URL")
 OLLAMA_PORT = os.getenv("OLLAMA_PORT")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
-os.environ["COHERE_API_KEY"] = os.getenv("COHERE_API_KEY")
+COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 
 
 class OllamaLLM(BaseLLM):

@@ -7,9 +7,7 @@ from loguru import logger
 from typing import List
 from ..backend.cloud.cloud_service_factory import CloudServiceFactory
 
-from agent.backend.ollama_service import (
-    embedd_documents_ollama
-)
+
 
 from agent.dependencies import document_service
 
