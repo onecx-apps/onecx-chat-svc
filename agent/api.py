@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from loguru import logger
 
+from agent.backend.document_service import DocumentService
+
 #from agent.backend.qdrant_service import get_qdrant_client
 from .routes import chat_router, document_router
 

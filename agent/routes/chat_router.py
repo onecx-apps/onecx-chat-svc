@@ -6,16 +6,9 @@ from ..data_model.chatbot_model import ChatMessageDTO, ConversationDTO, MessageT
 import agent.data_model.response_model as Response
 from loguru import logger
 
-
-from agent.backend.ollama_service import (
-    search_documents_ollama,
-    chat_ollama,
-    channeling_system_message,
-    q_and_a_system_message
-)
+from agent.dependencies import document_service, llm
 
 chat_router = APIRouter(tags=["chat"])
-
 
 chatConversationMemory = []
 def get_chat_by_conversation_id(conversationId):
@@ -72,8 +65,8 @@ async def chat_with_bot(chat_message: ChatMessageDTO) -> ChatMessageDTO:
     conversation["history"].append(message_dictDTO)
 
     #response bot
-    documents = search_documents_ollama(query=message_dict["message"], amount=os.getenv("AMOUNT_SIMILARITY_SEARCH_RESULTS",10))
-    answer, meta_data = chat_ollama(query=message_dict["message"], documents=documents, conversation_type=conversation["conversationType"], messages=chatCompletionArr)
+    documents = document_service.search_documents_ollama(query=message_dict["message"], amount=os.getenv("AMOUNT_SIMILARITY_SEARCH_RESULTS",10))
+    answer, meta_data = llm.chat(query=message_dict["message"], documents=documents, conversation_type=conversation["conversationType"], messages=chatCompletionArr)
     botResponse = ChatMessageDTO(conversationId=chat_message.conversationId, correlationId=message_dict["correlationId"], message=answer, type=MessageType.ASSISTANT, creationDate=int(time.time()))
     conversation["history"].append(botResponse)
     return botResponse
@@ -88,11 +81,6 @@ async def get_conversation(conversationId: str) -> ConversationDTO:
         raise HTTPException(status_code=404, detail="Conversation not found")
     else:
         return conversation
-
-
-
-
-
 
 @chat_router.post("/startConversation")
 async def start_conversation(conversation_type: str = Body(..., embed=True)) -> ConversationDTO:
