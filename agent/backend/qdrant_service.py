@@ -1,10 +1,16 @@
 import os
 
+from langchain.vectorstores import Qdrant
+from langchain.schema.embeddings import Embeddings
 
 from qdrant_client import QdrantClient, models
-from qdrant_client.http.models.models import UpdateResult
+
+from agent.utils.configuration import load_config
 
 from loguru import logger
+from omegaconf import DictConfig
+
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 
 def get_qdrant_client() -> QdrantClient:
     """Initializes the OpenAi vector db.
@@ -26,3 +32,25 @@ def get_qdrant_client() -> QdrantClient:
         )
         logger.info(f"SUCCESS: Collection {collection_name} created.")
 
+@load_config(location="config/db.yml")
+def get_db_connection(cfg: DictConfig, embedding_model: Embeddings) -> Qdrant:
+    """get_db_connection initializes the connection to the Qdrant db.
+
+    :param cfg: OmegaConf configuration
+    :type cfg: DictConfig
+    :return: Qdrant DB connection
+    :rtype: Qdrant
+    """
+    embedding = embedding_model
+    qdrant_client = QdrantClient(os.getenv("QDRANT_URL",cfg.qdrant.url), port=os.getenv("QDRANT_PORT",cfg.qdrant.port), api_key=os.getenv("QDRANT_API_KEY"), prefer_grpc=cfg.qdrant.prefer_grpc)
+    try: 
+        qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name_llama2)
+    except Exception:
+        qdrant_client.recreate_collection(
+            collection_name=cfg.qdrant.collection_name_llama2,
+            vectors_config=models.VectorParams(size=len(embedding.embed_query("Test text")), distance=models.Distance.COSINE),
+        )
+        logger.info(f"SUCCESS: Collection {cfg.qdrant.collection_name_llama2} created.")
+    vector_db = Qdrant(client=qdrant_client, collection_name=cfg.qdrant.collection_name_llama2, embeddings=embedding)
+    logger.info("SUCCESS: Qdrant DB Connection.")
+    return vector_db

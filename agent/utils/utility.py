@@ -5,7 +5,7 @@ import uuid
 
 from jinja2 import Template
 from loguru import logger
-
+from agent.backend.llm_services.LLM import BaseLLM
 
 
 def combine_text_from_list(input_list: list) -> str:
@@ -149,3 +149,8 @@ def replace_multiple_whitespaces(text):
 if __name__ == "__main__":
     # test the function
     generate_prompt("qa.j2", "This is a test text.", "What is the meaning of life?")
+
+def get_llm_service(name: str = "ollama") -> BaseLLM:
+    if (name == "ollama"):
+        from agent.backend.llm_services.ollama_service import OllamaLLM
+        return OllamaLLM()
