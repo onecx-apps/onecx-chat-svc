@@ -19,6 +19,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from aleph_alpha_client import Client, Prompt, EmbeddingRequest, TextControl
 
+from deprecated import deprecated
 
 from langchain.vectorstores import Qdrant
 from loguru import logger
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+@deprecated
 @load_config(location="config/db.yml")
 def get_db_connection(cfg: DictConfig, aleph_alpha_token: str) -> Qdrant:
     """Initializes a connection to the Qdrant DB.
@@ -57,6 +59,7 @@ def get_db_connection(cfg: DictConfig, aleph_alpha_token: str) -> Qdrant:
     return vector_db
 
 
+@deprecated
 def summarize_text_aleph_alpha(text: str, token: str) -> str:
     """Summarizes the given text using the Luminous API.
 
@@ -75,6 +78,7 @@ def summarize_text_aleph_alpha(text: str, token: str) -> str:
     return response.summary
 
 
+@deprecated
 @load_config(location="config/ai/aleph_alpha.yml")
 def send_completion_request(text: str, token: str, cfg: DictConfig) -> str:
     """Sends a completion request to the Luminous API.
@@ -116,6 +120,7 @@ def send_completion_request(text: str, token: str, cfg: DictConfig) -> str:
     return str(response.completions[0].completion)
 
 
+@deprecated
 def embedd_documents_aleph_alpha(dir: str, aleph_alpha_token: str) -> None:
     """Embeds the documents in the given directory in the Aleph Alpha database.
 
@@ -152,6 +157,7 @@ def embedd_documents_aleph_alpha(dir: str, aleph_alpha_token: str) -> None:
     logger.info("SUCCESS: Texts embedded.")
 
 
+@deprecated
 def embedd_text_aleph_alpha(text: str, file_name: str, aleph_alpha_token: str, seperator: str) -> None:
     """Embeds the given text in the Aleph Alpha database.
 
@@ -181,6 +187,7 @@ def embedd_text_aleph_alpha(text: str, file_name: str, aleph_alpha_token: str, s
     logger.info("SUCCESS: Text embedded.")
 
 
+@deprecated
 def embedd_text_files_aleph_alpha(folder: str, aleph_alpha_token: str, seperator: str) -> None:
     """Embeds text files in the Aleph Alpha database.
 
@@ -226,6 +233,7 @@ def embedd_text_files_aleph_alpha(folder: str, aleph_alpha_token: str, seperator
     logger.info("SUCCESS: Text embedded.")
 
 
+@deprecated
 def search_documents_aleph_alpha(aleph_alpha_token: str, query: str, amount: int = 8) -> List[Tuple[LangchainDocument, float]]:
     """Searches the Aleph Alpha service for similar documents.
 
@@ -253,6 +261,7 @@ def search_documents_aleph_alpha(aleph_alpha_token: str, query: str, amount: int
         logger.error(f"ERROR: Failed to search documents: {e}")
         raise Exception(f"Failed to search documents: {e}") from e
 
+@deprecated
 def qa_aleph_alpha(aleph_alpha_token: str, documents: list[tuple[LangchainDocument, float]], memory: str, query: str, summarization: bool = False) -> Tuple[str, str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
     """QA takes a list of documents and returns a list of answers.
 
@@ -316,6 +325,7 @@ def qa_aleph_alpha(aleph_alpha_token: str, documents: list[tuple[LangchainDocume
     return answer, prompt, meta_data
 
 
+@deprecated
 def explain_qa(aleph_alpha_token: str, document: LangchainDocument, query: str, summarization: bool = False):
     """Explian QA WIP."""
     text = document[0][0].page_content
@@ -355,6 +365,7 @@ def explain_qa(aleph_alpha_token: str, document: LangchainDocument, query: str, 
     return explanation, score, text, answer, meta_data
 
 
+@deprecated
 def explain_completion(prompt: str, output: str, token: str):
     """Returns an explanation of the given completion.
 
@@ -390,6 +401,7 @@ def explain_completion(prompt: str, output: str, token: str):
     return result
 
 
+@deprecated
 def process_documents_aleph_alpha(folder: str, token: str, type: str):
     """Process the documents in the given folder.
 
@@ -433,6 +445,7 @@ def process_documents_aleph_alpha(folder: str, token: str, type: str):
     return answers
 
 
+@deprecated
 def custom_completion_prompt_aleph_alpha(
     token: str,
     prompt: str,

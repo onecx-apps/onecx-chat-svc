@@ -19,6 +19,8 @@ from langchain.embeddings import OpenAIEmbeddings
 from qdrant_client.http import models
 import logging
 
+from deprecated import deprecated
+
 #from agent.backend.qdrant_service import get_qdrant_client
 
 
@@ -68,6 +70,7 @@ Always delete special characters that are used in HTML syntax like the newline c
 
 
 
+@deprecated
 @load_config(location="config/db.yml")
 def get_db_connection(open_ai_token: str, cfg: DictConfig) -> Qdrant:
     """get_db_connection initializes the connection to the Qdrant db.
@@ -95,6 +98,7 @@ def get_db_connection(open_ai_token: str, cfg: DictConfig) -> Qdrant:
     return vector_db
 
 
+@deprecated
 @load_config(location="config/ai/openai.yml")
 def summarize_text_openai(text: str, token: str, cfg: DictConfig) -> str:
     """Summarizes the given text using the Luminous API.
@@ -124,6 +128,7 @@ def summarize_text_openai(text: str, token: str, cfg: DictConfig) -> str:
     return response.choices[0].text
 
 
+@deprecated
 def embedd_documents_openai(dir: str, openai_token: str) -> None:
     """Embeds the documents in the given directory in the Openai database.
 
@@ -155,6 +160,7 @@ def embedd_documents_openai(dir: str, openai_token: str) -> None:
     logger.info("SUCCESS: Texts embedded.")
 
 
+@deprecated
 def embedd_text_openai(text: str, file_name: str, openai_token: str, seperator: str) -> None:
     """Embeds the given text in the Openai database.
 
@@ -184,6 +190,7 @@ def embedd_text_openai(text: str, file_name: str, openai_token: str, seperator: 
     logger.info("SUCCESS: Text embedded.")
 
 
+@deprecated
 def embedd_text_files_openai(folder: str, openai_token: str, seperator: str) -> None:
     """Embeds text files in the Openai database.
 
@@ -230,6 +237,7 @@ def embedd_text_files_openai(folder: str, openai_token: str, seperator: str) -> 
     
 
 
+@deprecated
 def search_documents_openai(open_ai_token: str, query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
     """Searches the documents in the Qdrant DB with a specific query.
 
@@ -250,6 +258,7 @@ def search_documents_openai(open_ai_token: str, query: str, amount: int, collect
 
     return docs
 
+@deprecated
 @load_config(location="config/ai/openai.yml")
 def send_chat_completion_openai(text: str, query: str, token: str, cfg: DictConfig, conversation_type: str, messages: any) -> str:
     """Sent completion request to OpenAI API.
@@ -283,6 +292,7 @@ def send_chat_completion_openai(text: str, query: str, token: str, cfg: DictConf
 
     return response["choices"][0]["message"]["content"]
 
+@deprecated
 def chat_openai(openai_token: str, documents: list[tuple[LangchainDocument, float]], messages: any, query: str, conversation_type: str, summarization: bool = False) -> Tuple[str, Union[Dict[Any, Any], List[Dict[Any, Any]]]]:
     """QA takes a list of documents and returns a list of answers.
 

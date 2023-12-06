@@ -7,7 +7,7 @@ from langchain.retrievers.document_compressors import DocumentCompressorPipeline
 from langchain.retrievers.document_compressors import EmbeddingsFilter
 from langchain.docstore.document import Document
 from langchain.document_loaders import DirectoryLoader, PyPDFLoader
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from typing import List, Optional, Tuple
 from langchain.embeddings import SentenceTransformerEmbeddings
 from dotenv import load_dotenv
@@ -38,9 +38,10 @@ class DocumentService():
         logger.info(f"Logged directory:  {dir}")
         loader = DirectoryLoader(dir, glob="*.pdf", loader_cls=PyPDFLoader)
         length_function = len
-        splitter = CharacterTextSplitter(
-            chunk_size=250,
-            chunk_overlap=50,
+        splitter = RecursiveCharacterTextSplitter(
+            separators=["\n\n", "\n", ". ", "; ", "! ", "? ", "# "],
+            chunk_size=350,
+            chunk_overlap=100,
             length_function=length_function,
         )
         docs = loader.load_and_split(splitter)
@@ -119,7 +120,7 @@ class DocumentService():
 
         logger.info("SUCCESS: Text embedded.")
         
-    def search_documents_ollama(self, query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
+    def search_documents(self, query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
         """Searches the documents in the Qdrant DB with a specific query.
 
         Args:

@@ -5,7 +5,7 @@ import uuid
 
 from jinja2 import Template
 from loguru import logger
-from agent.backend.LLM import BaseLLM
+from agent.backend.llm_services.LLM import BaseLLM
 
 
 def combine_text_from_list(input_list: list) -> str:
@@ -152,5 +152,5 @@ if __name__ == "__main__":
 
 def get_llm_service(name: str = "ollama") -> BaseLLM:
     if (name == "ollama"):
-        from agent.backend.ollama_service import OllamaLLM
+        from agent.backend.llm_services.ollama_service import OllamaLLM
         return OllamaLLM()

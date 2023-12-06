@@ -14,7 +14,7 @@ from agent.utils.utility import replace_multiple_whitespaces
 from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain.chat_models import ChatOllama
 
-from agent.backend.LLM import BaseLLM  
+from agent.backend.llm_services.LLM import BaseLLM  
 
 load_dotenv()
 
