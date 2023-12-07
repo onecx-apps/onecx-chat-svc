@@ -157,10 +157,10 @@ class DocumentService():
             splitter = CharacterTextSplitter(chunk_size=120, chunk_overlap=0, separator=". ")
             redundant_filter = EmbeddingsRedundantFilter(embeddings=embedding)
             relevant_filter = EmbeddingsFilter(embeddings=embedding)
-#            pipeline_compressor = DocumentCompressorPipeline(
-#                transformers=[splitter, redundant_filter, relevant_filter, rerank_compressor]
-#            )
-            compression_retriever1 = ContextualCompressionRetriever(base_compressor=rerank_compressor, base_retriever=retriever)
+            pipeline_compressor = DocumentCompressorPipeline(
+                transformers=[splitter, redundant_filter, relevant_filter, rerank_compressor]
+            )
+            compression_retriever1 = ContextualCompressionRetriever(base_compressor=pipeline_compressor, base_retriever=retriever)
 
             compressed_docs = compression_retriever1.get_relevant_documents(query)
 
