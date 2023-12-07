@@ -2,4 +2,4 @@ qdrant:
   url: http://qdrant
   port: 6333
   prefer_grpc: false
-  collection_name_llama2: llama2
+  collection_name: ollama

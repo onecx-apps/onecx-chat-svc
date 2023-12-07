@@ -22,7 +22,7 @@ def get_qdrant_client() -> QdrantClient:
   
     try:
 
-        collection_name = "llama2"
+        collection_name = "ollama"
         qdrant_client.get_collection(collection_name)
         logger.info(f"SUCCESS: Collection {collection_name} already exists.")
     except Exception:
@@ -44,13 +44,13 @@ def get_db_connection(cfg: DictConfig, embedding_model: Embeddings) -> Qdrant:
     embedding = embedding_model
     qdrant_client = QdrantClient(os.getenv("QDRANT_URL",cfg.qdrant.url), port=os.getenv("QDRANT_PORT",cfg.qdrant.port), api_key=os.getenv("QDRANT_API_KEY"), prefer_grpc=cfg.qdrant.prefer_grpc)
     try: 
-        qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name_llama2)
+        qdrant_client.get_collection(collection_name=cfg.qdrant.collection_name)
     except Exception:
         qdrant_client.recreate_collection(
-            collection_name=cfg.qdrant.collection_name_llama2,
+            collection_name=cfg.qdrant.collection_name,
             vectors_config=models.VectorParams(size=len(embedding.embed_query("Test text")), distance=models.Distance.COSINE),
         )
-        logger.info(f"SUCCESS: Collection {cfg.qdrant.collection_name_llama2} created.")
-    vector_db = Qdrant(client=qdrant_client, collection_name=cfg.qdrant.collection_name_llama2, embeddings=embedding)
+        logger.info(f"SUCCESS: Collection {cfg.qdrant.collection_name} created.")
+    vector_db = Qdrant(client=qdrant_client, collection_name=cfg.qdrant.collection_name, embeddings=embedding)
     logger.info("SUCCESS: Qdrant DB Connection.")
     return vector_db

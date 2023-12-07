@@ -1,5 +1,8 @@
 import os
 
+from omegaconf import DictConfig
+from agent.utils.configuration import load_config
+
 from agent.utils.utility import replace_multiple_whitespaces
 from loguru import logger
 from langchain.retrievers import ContextualCompressionRetriever
@@ -122,7 +125,8 @@ class DocumentService():
 
         logger.info("SUCCESS: Text embedded.")
         
-    def search_documents(self, query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
+    @load_config(location="config/db.yml")    
+    def search_documents(self, cfg: DictConfig, query: str, amount: int, collection_name: Optional[str] = None) -> List[Tuple[Document, float]]:
         """Searches the documents in the Qdrant DB with a specific query.
 
         Args:
@@ -150,16 +154,16 @@ class DocumentService():
         if os.environ.get('ACTIVATE_RERANKER') == "True":
             embedding = self.embedding_model
             filtered_docs = [t[0] for t in docs]
-            retriever = self.vector_store.from_documents(filtered_docs, embedding, api_key=os.environ.get('QDRANT_API_KEY'), url=os.environ.get('QDRANT_URL')).as_retriever()
+            retriever = self.vector_store.from_documents(filtered_docs, embedding, api_key=os.environ.get('QDRANT_API_KEY'), url=os.environ.get('QDRANT_URL'), collection_name="temp_ollama").as_retriever()
 
             #cohere multi lang rerank model only supports none-english documents
             rerank_compressor = CohereRerank(user_agent="my-app", model="rerank-multilingual-v2.0", top_n=3)
-            splitter = CharacterTextSplitter(chunk_size=120, chunk_overlap=0, separator=". ")
+            splitter = CharacterTextSplitter(chunk_size=120, chunk_overlap=35, separator=". ")
             redundant_filter = EmbeddingsRedundantFilter(embeddings=embedding)
             relevant_filter = EmbeddingsFilter(embeddings=embedding)
-#            pipeline_compressor = DocumentCompressorPipeline(
-#                transformers=[splitter, redundant_filter, relevant_filter, rerank_compressor]
-#            )
+            pipeline_compressor = DocumentCompressorPipeline(
+                transformers=[splitter, redundant_filter, relevant_filter, rerank_compressor]
+            )
             compression_retriever1 = ContextualCompressionRetriever(base_compressor=rerank_compressor, base_retriever=retriever)
 
             compressed_docs = compression_retriever1.get_relevant_documents(query)
