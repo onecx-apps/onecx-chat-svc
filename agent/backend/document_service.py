@@ -1,4 +1,6 @@
 import os
+
+from agent.utils.utility import replace_multiple_whitespaces
 from loguru import logger
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import CohereRerank
@@ -7,7 +9,7 @@ from langchain.retrievers.document_compressors import DocumentCompressorPipeline
 from langchain.retrievers.document_compressors import EmbeddingsFilter
 from langchain.docstore.document import Document
 from langchain.document_loaders import DirectoryLoader, PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from typing import List, Optional, Tuple
 from langchain.embeddings import SentenceTransformerEmbeddings
 from dotenv import load_dotenv
@@ -40,8 +42,8 @@ class DocumentService():
         length_function = len
         splitter = RecursiveCharacterTextSplitter(
             separators=["\n\n", "\n", ". ", "; ", "! ", "? ", "# "],
-            chunk_size=350,
-            chunk_overlap=100,
+            chunk_size=500,
+            chunk_overlap=50,
             length_function=length_function,
         )
         docs = loader.load_and_split(splitter)
@@ -130,7 +132,17 @@ class DocumentService():
             List[Tuple[Document, float]]: A list of search results, where each result is a tuple
             containing a Document object and a float score.
         """
-        docs = self.vector_store.similarity_search_with_score(query, k=amount)
+        docs = self.vector_store.similarity_search_with_score(query, k=amount, score_threshold=.7)
+
+        logger.debug(f"\nNumber of documents: {len(docs)}")
+
+
+        if docs is not None and len(docs) > 0:
+            for element in docs:
+                document, score = element
+                logger.debug(f"\n Score {score}")
+                logger.debug(replace_multiple_whitespaces(document.page_content))
+
 
         logger.info("SUCCESS: Documents found after similarity_search_with_score.")
         #logger.info(f"These are the docs found after similarity_search_with_score: {docs}")
@@ -141,14 +153,14 @@ class DocumentService():
             retriever = self.vector_store.from_documents(filtered_docs, embedding, api_key=os.environ.get('QDRANT_API_KEY'), url=os.environ.get('QDRANT_URL')).as_retriever()
 
             #cohere multi lang rerank model only supports none-english documents
-            rerank_compressor = CohereRerank(user_agent="my-app", model="rerank-multilingual-v2.0", top_n=1)
+            rerank_compressor = CohereRerank(user_agent="my-app", model="rerank-multilingual-v2.0", top_n=3)
             splitter = CharacterTextSplitter(chunk_size=120, chunk_overlap=0, separator=". ")
             redundant_filter = EmbeddingsRedundantFilter(embeddings=embedding)
             relevant_filter = EmbeddingsFilter(embeddings=embedding)
-            pipeline_compressor = DocumentCompressorPipeline(
-                transformers=[splitter, redundant_filter, relevant_filter, rerank_compressor]
-            )
-            compression_retriever1 = ContextualCompressionRetriever(base_compressor=pipeline_compressor, base_retriever=retriever)
+#            pipeline_compressor = DocumentCompressorPipeline(
+#                transformers=[splitter, redundant_filter, relevant_filter, rerank_compressor]
+#            )
+            compression_retriever1 = ContextualCompressionRetriever(base_compressor=rerank_compressor, base_retriever=retriever)
 
             compressed_docs = compression_retriever1.get_relevant_documents(query)
 
