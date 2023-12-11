@@ -31,8 +31,8 @@ This is a Rest-Backend for a Conversational Agent, that allows to embedd Documen
 To run the complete system with docker use this command:
 
 ```bash
-git clone https://github.com/onecx-apps/onecx-chat-svc.git
-cd onecx-chat-svc
+git clone https://github.com/onecx-apps/onecx-ai-svc.git
+cd onecx-ai-svc
 ```
 Create a .env file from the .env-template and set the qdrant api key. For tests just set it to test.
 QDRANT_API_KEY="test"
@@ -47,7 +47,7 @@ Then go to http://127.0.0.1:8001/docs or http://127.0.0.1:8001/redoc to see the 
 
 ## Docker build
 
-docker build . -t onecx-chat-svc
+docker build . -t onecx-ai-svc
 
 
 ## Redoc API Documentation
