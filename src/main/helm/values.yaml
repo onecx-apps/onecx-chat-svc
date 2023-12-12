@@ -1,0 +1,6 @@
+app:
+  image:
+    repository: "onecx/onecx-theme-svc"
+    tag: 999-SNAPSHOT
+  db:
+    enabled: true

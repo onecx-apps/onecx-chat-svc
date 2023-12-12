@@ -5,5 +5,5 @@ on:
       - '**'
 jobs:
   release:
-    uses: onecx-apps/ci-python/.github/workflows/build-release.yml@v1
+    uses: onecx/ci-quarkus/.github/workflows/build-release.yml@v1
     secrets: inherit
