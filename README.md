@@ -1,2 +1,2 @@
 # onecx-chat-svc
-OneCx product store service
+OneCx Chat Service

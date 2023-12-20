@@ -1,0 +1,12 @@
+{
+  "chats": {
+    "Chat1": {
+      "tenantId": "default",
+      "itemId": "Chat1"
+    },
+    "Chat2": {
+      "tenantId": "default",
+      "itemId": "Chat2"
+    }
+  }
+}

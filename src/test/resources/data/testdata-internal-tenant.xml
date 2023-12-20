@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+
+	<!-- CHAT -->
+	<CHAT guid="11-111" optlock="0" item_id="cg" app_id="appId" tenant_id="tenant-100" />
+	<CHAT guid="22-222" optlock="0" item_id="chatWithoutPortal" app_id="appId" tenant_id="tenant-100" />
+	<CHAT guid="DELETE_1" optlock="0" item_id="toDelete" app_id="appId" tenant_id="tenant-200" />
+
+</dataset>

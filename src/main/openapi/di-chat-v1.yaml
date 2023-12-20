@@ -1,0 +1,48 @@
+---
+openapi: 3.0.3
+info:
+  title: onecx-chat chats import from file during the start of the application
+  version: 1.0.0
+servers:
+  - url: "http://localhost"
+paths:
+  /import/chat:
+    post:
+      operationId: importChat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataImport'
+      responses:
+        200:
+          description: ok
+components:
+  schemas:
+    DataImport:
+      type: object
+      properties:
+        chats:
+          $ref: '#/components/schemas/DataImportChats'
+    DataImportChats:
+      type: object
+      nullable: false
+      additionalProperties:
+        $ref: '#/components/schemas/DataImportChat'
+    DataImportChat:
+      type: object
+      required:
+        - tenantId
+      properties:
+        tenantId:
+          type: string
+        itemId:
+          type: string
+        context:
+          type: string
+        baseUrl:
+          type: string
+        resourceUrl:
+          type: string
+        appId:
+          type: string
