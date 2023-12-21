@@ -25,21 +25,21 @@ class ChatsRestControllerTest extends AbstractTest {
         // delete chat
         given()
                 .contentType(APPLICATION_JSON)
-                .pathParam("id", "DELETE_1")
+                .pathParam("id", "chat-DELETE_1")
                 .delete("{id}")
                 .then().statusCode(NO_CONTENT.getStatusCode());
 
         // check if chat exists
         given()
                 .contentType(APPLICATION_JSON)
-                .pathParam("id", "DELETE_1")
+                .pathParam("id", "chat-DELETE_1")
                 .get("{id}")
                 .then().statusCode(NOT_FOUND.getStatusCode());
 
         // delete chat in portal
         given()
                 .contentType(APPLICATION_JSON)
-                .pathParam("id", "11-111")
+                .pathParam("id", "chat-11-111")
                 .delete("{id}")
                 .then()
                 .statusCode(NO_CONTENT.getStatusCode());
@@ -51,7 +51,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         var dto = given()
                 .contentType(APPLICATION_JSON)
-                .pathParam("id", "22-222")
+                .pathParam("id", "chat-22-222")
                 .get("{id}")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
@@ -60,7 +60,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         assertThat(dto).isNotNull();
         assertThat(dto.getType()).isEqualTo(ChatTypeDTO.AI_CHAT);
-        assertThat(dto.getId()).isEqualTo("22-222");
+        assertThat(dto.getId()).isEqualTo("chat-22-222");
 
         given()
                 .contentType(APPLICATION_JSON)
@@ -70,7 +70,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         dto = given()
                 .contentType(APPLICATION_JSON)
-                .pathParam("id", "11-111")
+                .pathParam("id", "chat-11-111")
                 .get("{id}")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
@@ -79,7 +79,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         assertThat(dto).isNotNull();
         assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_CHAT);
-        assertThat(dto.getId()).isEqualTo("11-111");
+        assertThat(dto.getId()).isEqualTo("chat-11-111");
 
     }
 
@@ -171,7 +171,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
                 .when()
-                .pathParam("id", "11-111")
+                .pathParam("id", "chat-11-111")
                 .put("{id}")
                 .then().statusCode(NO_CONTENT.getStatusCode());
 
@@ -179,7 +179,7 @@ class ChatsRestControllerTest extends AbstractTest {
         var dto = given().contentType(APPLICATION_JSON)
                 .body(chatDto)
                 .when()
-                .pathParam("id", "11-111")
+                .pathParam("id", "chat-11-111")
                 .get("{id}")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)

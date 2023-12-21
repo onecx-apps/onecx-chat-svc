@@ -42,7 +42,7 @@ public class ChatsRestController implements ChatsInternalApi {
 
     @Override
     @Transactional
-    public Response createNewChat(CreateChatDTO createChatDTO) {
+    public Response createChat(CreateChatDTO createChatDTO) {
         var chat = mapper.create(createChatDTO);
         chat = dao.create(chat);
         return Response

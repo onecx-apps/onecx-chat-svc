@@ -25,7 +25,7 @@ import io.quarkus.test.junit.TestProfile;
 class ChatsRestControllerTenantTest extends AbstractTest {
 
     @Test
-    void createNewChatTest() {
+    void createChatTest() {
 
         // create chat
         var chatDto = new CreateChatDTO();
@@ -78,7 +78,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .extract().as(ProblemDetailResponseDTO.class);
 
         assertThat(exception.getErrorCode()).isEqualTo("CONSTRAINT_VIOLATIONS");
-        assertThat(exception.getDetail()).isEqualTo("createNewChat.createChatDTO: must not be null");
+        assertThat(exception.getDetail()).isEqualTo("createChat.createChatDTO: must not be null");
 
         // create chat with existing type
         chatDto = new CreateChatDTO();
@@ -102,35 +102,35 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
-                .delete("DELETE_1")
+                .delete("chat-DELETE_1")
                 .then().statusCode(NO_CONTENT.getStatusCode());
 
         // delete entity with wrong tenant still exists
         given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
-                .get("DELETE_1")
+                .get("chat-DELETE_1")
                 .then().statusCode(OK.getStatusCode());
 
         // delete chat
         given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
-                .delete("DELETE_1")
+                .delete("chat-DELETE_1")
                 .then().statusCode(NO_CONTENT.getStatusCode());
 
         // check if chat exists
         given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
-                .get("DELETE_1")
+                .get("chat-DELETE_1")
                 .then().statusCode(NOT_FOUND.getStatusCode());
 
         // delete chat in portal
         given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
-                .delete("11-111")
+                .delete("chat-11-111")
                 .then()
                 .statusCode(NO_CONTENT.getStatusCode());
 
@@ -142,7 +142,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         var dto = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
-                .get("22-222")
+                .get("chat-22-222")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
                 .extract()
@@ -150,17 +150,17 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         assertThat(dto).isNotNull();
         assertThat(dto.getType()).isEqualTo(ChatTypeDTO.AI_CHAT);
-        assertThat(dto.getId()).isEqualTo("22-222");
+        assertThat(dto.getId()).isEqualTo("chat-22-222");
 
         given()
                 .contentType(APPLICATION_JSON)
-                .get("22-222")
+                .get("chat-22-222")
                 .then().statusCode(NOT_FOUND.getStatusCode());
 
         dto = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
-                .get("11-111")
+                .get("chat-11-111")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
                 .extract()
@@ -168,7 +168,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         assertThat(dto).isNotNull();
         assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_CHAT);
-        assertThat(dto.getId()).isEqualTo("11-111");
+        assertThat(dto.getId()).isEqualTo("chat-11-111");
 
     }
 
@@ -287,7 +287,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .body(chatDto)
                 .when()
-                .put("11-111")
+                .put("chat-11-111")
                 .then().statusCode(NOT_FOUND.getStatusCode());
 
         // update chat
@@ -296,7 +296,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(chatDto)
                 .when()
-                .put("11-111")
+                .put("chat-11-111")
                 .then().statusCode(NO_CONTENT.getStatusCode());
 
         // download chat
@@ -304,7 +304,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(chatDto)
                 .when()
-                .get("11-111")
+                .get("chat-11-111")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
                 .extract()

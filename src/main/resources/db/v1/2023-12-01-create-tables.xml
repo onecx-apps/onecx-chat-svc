@@ -23,11 +23,36 @@
                 <column name="topic" type="VARCHAR(255)"/>
                 <column name="summary" type="VARCHAR(1000)"/>
                 <column name="app_id" type="VARCHAR(255)"/>
-
                 <column name="tenant_id" type="varchar(255 BYTE)">
                     <constraints nullable="false"/>
                 </column>
             </createTable>
         </changeSet>
+        <changeSet author="dev (generated)" id="1701429130534-2">
+
+            <createTable tableName="message">
+                <column name="optlock" type="INTEGER">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="creationuser" type="VARCHAR(255)"/>
+                <column name="creationdate" type="TIMESTAMP WITHOUT TIME ZONE"/>
+                <column name="modificationdate" type="TIMESTAMP WITHOUT TIME ZONE"/>
+                <column name="modificationuser" type="VARCHAR(255)"/>
+                <column name="guid" type="VARCHAR(255)">
+                    <constraints nullable="false" primaryKey="true" primaryKeyName="msg_pkey"/>
+                </column>
+                <column name="type" type="VARCHAR(255)"/>
+                <column name="user_name" type="VARCHAR(255)"/>
+                <column name="message" type="VARCHAR(4000)"/>
+                <column name="reliability" type="float"/>
+                <column name="app_id" type="VARCHAR(255)"/>                
+                <column name="tenant_id" type="varchar(255 BYTE)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="chat_id" type="VARCHAR(255)">
+                    <constraints nullable="false"/>
+                </column>
+            </createTable>
+        </changeSet>        
     </databaseChangeLog>
 

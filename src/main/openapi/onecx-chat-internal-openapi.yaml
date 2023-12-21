@@ -41,8 +41,8 @@ paths:
     post:
       tags:
         - chatsInternal
-      description: Create new chat
-      operationId: createNewChat
+      description: Create chat
+      operationId: createChat
       requestBody:
         required: true
         content:
