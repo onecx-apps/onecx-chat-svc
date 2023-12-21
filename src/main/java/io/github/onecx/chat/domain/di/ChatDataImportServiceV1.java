@@ -74,7 +74,7 @@ public class ChatDataImportServiceV1 implements DataImportService {
         // clean data
         chatDAO.deleteAll();
 
-        data.getChats().forEach((itemId, dto) -> {
+        data.getChats().forEach((type, dto) -> {
 
             try {
                 var ctx = Context.builder()
@@ -85,7 +85,7 @@ public class ChatDataImportServiceV1 implements DataImportService {
                 ApplicationContext.start(ctx);
                 // import chats
                 var chat = mapper.importChat(dto);
-                chat.setItemId(itemId);
+                chat.setType(type);
                 chatDAO.create(chat);
             } finally {
                 ApplicationContext.close();

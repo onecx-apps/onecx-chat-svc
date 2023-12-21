@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.tkit.quarkus.test.WithDBData;
 
 import gen.io.github.onecx.chat.rs.internal.model.*;
-import io.github.onecx.chat.rs.internal.controllers.ChatsRestController;
 import io.github.onecx.chat.test.AbstractTest;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -30,11 +29,10 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // create chat
         var chatDto = new CreateChatDTO();
-        chatDto.setItemId("test01");
+        chatDto.setType("test01");
         chatDto.setAppId("appId");
-        chatDto.setContext("context");
-        chatDto.setResourceUrl("resource/url");
-        chatDto.setBaseUrl("base/url");
+        chatDto.setTopic("topic");
+        chatDto.setSummary("summary");
 
         var dto = given()
                 .when()
@@ -64,10 +62,9 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull()
-                .returns(chatDto.getItemId(), from(ChatDTO::getItemId))
-                .returns(chatDto.getContext(), from(ChatDTO::getContext))
-                .returns(chatDto.getBaseUrl(), from(ChatDTO::getBaseUrl))
-                .returns(chatDto.getResourceUrl(), from(ChatDTO::getResourceUrl))
+                .returns(chatDto.getType(), from(ChatDTO::getType))
+                .returns(chatDto.getTopic(), from(ChatDTO::getTopic))
+                .returns(chatDto.getSummary(), from(ChatDTO::getSummary))
                 .returns(chatDto.getAppId(), from(ChatDTO::getAppId));
 
         // create chat without body
@@ -83,9 +80,9 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(exception.getErrorCode()).isEqualTo("CONSTRAINT_VIOLATIONS");
         assertThat(exception.getDetail()).isEqualTo("createNewChat.createChatDTO: must not be null");
 
-        // create chat with existing itemId
+        // create chat with existing type
         chatDto = new CreateChatDTO();
-        chatDto.setItemId("cg");
+        chatDto.setType("cg");
         chatDto.setAppId("appId");
 
         exception = given().when()
@@ -99,7 +96,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         assertThat(exception.getErrorCode()).isEqualTo("PERSIST_ENTITY_FAILED");
         assertThat(exception.getDetail()).isEqualTo(
-                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_item_id'  Detail: Key (item_id, app_id, tenant_id)=(cg, appId, tenant-100) already exists.]");
+                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_type'  Detail: Key (type, app_id, tenant_id)=(cg, appId, tenant-100) already exists.]");
     }
 
     @Test
@@ -148,22 +145,22 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         var dto = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
-                .pathParam("itemId", "chatWithoutPortal")
-                .get("/itemId/{itemId}")
+                .pathParam("type", "chatWithoutPortal")
+                .get("/type/{type}")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
                 .extract()
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getItemId()).isEqualTo("chatWithoutPortal");
+        assertThat(dto.getType()).isEqualTo("chatWithoutPortal");
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
-                .pathParam("itemId", "chatWithoutPortal")
-                .get("/itemId/{itemId}")
+                .pathParam("type", "chatWithoutPortal")
+                .get("/type/{type}")
                 .then().statusCode(NOT_FOUND.getStatusCode());
     }
 
@@ -180,7 +177,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getItemId()).isEqualTo("chatWithoutPortal");
+        assertThat(dto.getType()).isEqualTo("chatWithoutPortal");
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
@@ -198,7 +195,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getItemId()).isEqualTo("cg");
+        assertThat(dto.getType()).isEqualTo("cg");
         assertThat(dto.getId()).isEqualTo("11-111");
 
     }
@@ -271,7 +268,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(2);
         assertThat(data.getStream()).isNotNull().hasSize(2);
 
-        criteria.setItemId(" ");
+        criteria.setType(" ");
         data = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
@@ -287,7 +284,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(2);
         assertThat(data.getStream()).isNotNull().hasSize(2);
 
-        criteria.setItemId("cg");
+        criteria.setType("cg");
         data = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
@@ -310,8 +307,8 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // update none existing chat
         var chatDto = new UpdateChatDTO();
-        chatDto.setItemId("test01");
-        chatDto.setContext("context-update");
+        chatDto.setType("test01");
+        chatDto.setTopic("topic-update");
 
         given()
                 .contentType(APPLICATION_JSON)
@@ -342,17 +339,17 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getContext()).isEqualTo(chatDto.getContext());
+        assertThat(dto.getTopic()).isEqualTo(chatDto.getTopic());
 
     }
 
     @Test
-    void updateChatWithExistingItemIdTest() {
+    void updateChatWithExistingTypeTest() {
 
         var chatDto = new UpdateChatDTO();
-        chatDto.setItemId("chatWithoutPortal");
+        chatDto.setType("chatWithoutPortal");
         chatDto.setAppId("appId");
-        chatDto.setContext("context");
+        chatDto.setTopic("topic");
 
         var exception = given()
                 .contentType(APPLICATION_JSON)
@@ -367,7 +364,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         Assertions.assertNotNull(exception);
         Assertions.assertEquals("MERGE_ENTITY_FAILED", exception.getErrorCode());
         Assertions.assertEquals(
-                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_item_id'  Detail: Key (item_id, app_id, tenant_id)=(chatWithoutPortal, appId, tenant-100) already exists.]",
+                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_type'  Detail: Key (type, app_id, tenant_id)=(chatWithoutPortal, appId, tenant-100) already exists.]",
                 exception.getDetail());
         Assertions.assertNull(exception.getInvalidParams());
 

@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import gen.io.github.onecx.chat.di.v1.model.DataImportDTOV1;
 import io.github.onecx.chat.domain.daos.ChatDAO;
-import io.github.onecx.chat.domain.di.ChatDataImportServiceV1;
 import io.github.onecx.chat.domain.models.Chat;
 import io.github.onecx.chat.test.AbstractTest;
 import io.quarkus.test.junit.QuarkusTest;

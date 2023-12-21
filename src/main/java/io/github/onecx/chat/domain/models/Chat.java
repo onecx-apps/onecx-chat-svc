@@ -12,26 +12,23 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "CHAT", uniqueConstraints = {
-        @UniqueConstraint(name = "CHAT_ITEM_ID", columnNames = { "ITEM_ID", "APP_ID", "TENANT_ID" })
+        @UniqueConstraint(name = "CHAT_TYPE", columnNames = { "TYPE", "APP_ID", "TENANT_ID" })
 })
 @SuppressWarnings("java:S2160")
 public class Chat extends TraceableEntity {
 
-    @Column(name = "ITEM_ID")
-    private String itemId;
+    @Column(name = "TYPE")
+    private String type;
 
     @TenantId
     @Column(name = "TENANT_ID")
     private String tenantId;
 
-    @Column(name = "CONTEXT")
-    private String context;
+    @Column(name = "TOPIC")
+    private String topic;
 
-    @Column(name = "BASE_URL")
-    private String baseUrl;
-
-    @Column(name = "RESOURCE_URL")
-    private String resourceUrl;
+    @Column(name = "SUMMARY")
+    private String summary;
 
     @Column(name = "APP_ID")
     private String appId;

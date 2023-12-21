@@ -19,10 +19,9 @@
                 <column name="guid" type="VARCHAR(255)">
                     <constraints nullable="false" primaryKey="true" primaryKeyName="chat_pkey"/>
                 </column>
-                <column name="item_id" type="VARCHAR(255)"/>
-                <column name="context" type="VARCHAR(255)"/>
-                <column name="base_url" type="VARCHAR(255)"/>
-                <column name="resource_url" type="VARCHAR(255)"/>
+                <column name="type" type="VARCHAR(255)"/>
+                <column name="topic" type="VARCHAR(255)"/>
+                <column name="summary" type="VARCHAR(1000)"/>
                 <column name="app_id" type="VARCHAR(255)"/>
 
                 <column name="tenant_id" type="varchar(255 BYTE)">
@@ -30,7 +29,7 @@
                 </column>
             </createTable>
 
-            <addUniqueConstraint columnNames="item_id, app_id, tenant_id" constraintName="chat_item_id" tableName="chat"/>
+            <addUniqueConstraint columnNames="type, app_id, tenant_id" constraintName="chat_type" tableName="chat"/>
         </changeSet>
     </databaseChangeLog>
 

@@ -68,8 +68,8 @@ public class ChatsRestController implements ChatsInternalApi {
     }
 
     @Override
-    public Response getChatByItemId(String itemId) {
-        var chat = dao.findChatByItemId(itemId);
+    public Response getChatByType(String type) {
+        var chat = dao.findChatByType(type);
         if (chat == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

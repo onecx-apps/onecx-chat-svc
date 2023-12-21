@@ -10,7 +10,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
 import org.tkit.quarkus.jpa.exceptions.DAOException;
 
-import io.github.onecx.chat.domain.daos.ChatDAO;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -33,10 +32,10 @@ class ChatDAOTest {
                 ChatDAO.ErrorKeys.FIND_ENTITY_BY_ID_FAILED);
         methodExceptionTests(() -> dao.findChatsByCriteria(null),
                 ChatDAO.ErrorKeys.ERROR_FIND_CHATS_BY_CRITERIA);
-        methodExceptionTests(() -> dao.findChatByItemId(null),
-                ChatDAO.ErrorKeys.ERROR_FIND_CHAT_BY_ITEM_ID);
-        methodExceptionTests(() -> dao.findChatByItemId(null),
-                ChatDAO.ErrorKeys.ERROR_FIND_CHAT_BY_ITEM_ID);
+        methodExceptionTests(() -> dao.findChatByType(null),
+                ChatDAO.ErrorKeys.ERROR_FIND_CHAT_BY_TYPE);
+        methodExceptionTests(() -> dao.findChatByType(null),
+                ChatDAO.ErrorKeys.ERROR_FIND_CHAT_BY_TYPE);
         methodExceptionTests(() -> dao.findAll(0, 2),
                 ChatDAO.ErrorKeys.ERROR_FIND_ALL_CHAT_PAGE);
     }

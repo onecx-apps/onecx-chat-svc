@@ -9,13 +9,11 @@ import lombok.Setter;
 @RegisterForReflection
 public class ChatSearchCriteria {
 
-    private String itemId;
+    private String type;
 
-    private String context;
+    private String topic;
 
-    private String baseUrl;
-
-    private String resourceUrl;
+    private String summary;
 
     private String appId;
 

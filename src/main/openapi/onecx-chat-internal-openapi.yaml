@@ -152,14 +152,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ChatPageResult'
-  /internal/chats/itemId/{itemId}:
+  /internal/chats/type/{type}:
     get:
       tags:
         - chatsInternal
       description: Load a single chat definition
-      operationId: getChatByItemId
+      operationId: getChatByType
       parameters:
-        - name: itemId
+        - name: type
           in: path
           required: true
           schema:
@@ -178,13 +178,11 @@ components:
     ChatSearchCriteria:
       type: object
       properties:
-        itemId:
+        type:
           type: string
-        context:
+        topic:
           type: string
-        baseUrl:
-          type: string
-        resourceUrl:
+        summary:
           type: string
         appId:
           type: string                                        
@@ -220,7 +218,7 @@ components:
             $ref: '#/components/schemas/Chat'
     Chat:
       required:
-        - itemId
+        - type
       type: object
       properties:
         version:
@@ -236,13 +234,11 @@ components:
           type: string
         id:
           type: string
-        itemId:
+        type:
           type: string
-        context:
+        topic:
           type: string
-        baseUrl:
-          type: string
-        resourceUrl:
+        summary:
           type: string
         appId:
           type: string
@@ -281,7 +277,7 @@ components:
           type: string
     CreateChat:
       required:
-        - itemId
+        - type
       type: object
       properties:
         version:
@@ -297,13 +293,11 @@ components:
           type: string
         id:
           type: string
-        itemId:
+        type:
           type: string
-        context:
+        topic:
           type: string
-        baseUrl:
-          type: string
-        resourceUrl:
+        summary:
           type: string
         appId:
           type: string
@@ -325,13 +319,11 @@ components:
           type: string
         id:
           type: string
-        itemId:
+        type:
           type: string
-        context:
+        topic:
           type: string
-        baseUrl:
-          type: string
-        resourceUrl:
+        summary:
           type: string
         appId:
           type: string

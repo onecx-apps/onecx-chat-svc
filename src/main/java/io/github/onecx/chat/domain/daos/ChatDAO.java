@@ -41,8 +41,8 @@ public class ChatDAO extends AbstractDAO<Chat> {
             var cq = cb.createQuery(Chat.class);
             var root = cq.from(Chat.class);
 
-            if (criteria.getItemId() != null && !criteria.getItemId().isBlank()) {
-                cq.where(cb.like(root.get(Chat_.itemId), QueryCriteriaUtil.wildcard(criteria.getItemId())));
+            if (criteria.getType() != null && !criteria.getType().isBlank()) {
+                cq.where(cb.like(root.get(Chat_.type), QueryCriteriaUtil.wildcard(criteria.getType())));
             }
 
             return createPageQuery(cq, Page.of(criteria.getPageNumber(), criteria.getPageSize())).getPageResult();
@@ -62,19 +62,19 @@ public class ChatDAO extends AbstractDAO<Chat> {
         }
     }
 
-    public Chat findChatByItemId(String itemId) {
+    public Chat findChatByType(String type) {
         try {
             var cb = this.getEntityManager().getCriteriaBuilder();
             var cq = cb.createQuery(Chat.class);
             var root = cq.from(Chat.class);
-            cq.where(cb.equal(root.get(Chat_.itemId), itemId));
+            cq.where(cb.equal(root.get(Chat_.type), type));
 
             return this.getEntityManager().createQuery(cq).getSingleResult();
 
         } catch (NoResultException nre) {
             return null;
         } catch (Exception ex) {
-            throw new DAOException(ErrorKeys.ERROR_FIND_CHAT_BY_ITEM_ID, ex);
+            throw new DAOException(ErrorKeys.ERROR_FIND_CHAT_BY_TYPE, ex);
         }
     }
 
@@ -83,6 +83,6 @@ public class ChatDAO extends AbstractDAO<Chat> {
         FIND_ENTITY_BY_ID_FAILED,
         ERROR_FIND_CHATS_BY_CRITERIA,
         ERROR_FIND_ALL_CHAT_PAGE,
-        ERROR_FIND_CHAT_BY_ITEM_ID,
+        ERROR_FIND_CHAT_BY_TYPE,
     }
 }
