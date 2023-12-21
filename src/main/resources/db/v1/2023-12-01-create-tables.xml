@@ -28,8 +28,6 @@
                     <constraints nullable="false"/>
                 </column>
             </createTable>
-
-            <addUniqueConstraint columnNames="type, app_id, tenant_id" constraintName="chat_type" tableName="chat"/>
         </changeSet>
     </databaseChangeLog>
 

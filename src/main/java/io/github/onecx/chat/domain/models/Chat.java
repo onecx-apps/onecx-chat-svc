@@ -11,9 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "CHAT", uniqueConstraints = {
-        @UniqueConstraint(name = "CHAT_TYPE", columnNames = { "TYPE", "APP_ID", "TENANT_ID" })
-})
+@Table(name = "CHAT")
 @SuppressWarnings("java:S2160")
 public class Chat extends TraceableEntity {
 

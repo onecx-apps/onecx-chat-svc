@@ -4,10 +4,6 @@ import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.from;
-
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,68 +18,6 @@ import io.quarkus.test.junit.QuarkusTest;
 @TestHTTPEndpoint(ChatsRestController.class)
 @WithDBData(value = "data/testdata-internal.xml", deleteBeforeInsert = true, deleteAfterTest = true, rinseAndRepeat = true)
 class ChatsRestControllerTest extends AbstractTest {
-
-    @Test
-    void createNewChatTest() {
-
-        // create chat
-        var chatDto = new CreateChatDTO();
-        chatDto.setType("test01");
-        chatDto.setAppId("appId");
-        chatDto.setTopic("topic");
-        chatDto.setSummary("summary");
-
-        var uri = given()
-                .when()
-                .contentType(APPLICATION_JSON)
-                .body(chatDto)
-                .post()
-                .then().statusCode(CREATED.getStatusCode())
-                .extract().header(HttpHeaders.LOCATION);
-
-        var dto = given()
-                .contentType(APPLICATION_JSON)
-                .get(uri)
-                .then()
-                .statusCode(Response.Status.OK.getStatusCode())
-                .extract()
-                .body().as(ChatDTO.class);
-
-        assertThat(dto).isNotNull()
-                .returns(chatDto.getType(), from(ChatDTO::getType))
-                .returns(chatDto.getTopic(), from(ChatDTO::getTopic))
-                .returns(chatDto.getSummary(), from(ChatDTO::getSummary))
-                .returns(chatDto.getAppId(), from(ChatDTO::getAppId));
-
-        // create chat without body
-        var exception = given()
-                .when()
-                .contentType(APPLICATION_JSON)
-                .post()
-                .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract().as(ProblemDetailResponseDTO.class);
-
-        assertThat(exception.getErrorCode()).isEqualTo("CONSTRAINT_VIOLATIONS");
-        assertThat(exception.getDetail()).isEqualTo("createNewChat.createChatDTO: must not be null");
-
-        // create chat with existing name
-        chatDto = new CreateChatDTO();
-        chatDto.setType("cg");
-        chatDto.setAppId("appId");
-
-        exception = given().when()
-                .contentType(APPLICATION_JSON)
-                .body(chatDto)
-                .post()
-                .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract().as(ProblemDetailResponseDTO.class);
-
-        assertThat(exception.getErrorCode()).isEqualTo("PERSIST_ENTITY_FAILED");
-        assertThat(exception.getDetail()).isEqualTo(
-                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_type'  Detail: Key (type, app_id, tenant_id)=(cg, appId, default) already exists.]");
-    }
 
     @Test
     void deleteChatTest() {
@@ -276,33 +210,6 @@ class ChatsRestControllerTest extends AbstractTest {
 
         assertThat(dto).isNotNull();
         assertThat(dto.getTopic()).isEqualTo(chatDto.getTopic());
-
-    }
-
-    @Test
-    void updateChatWithExistingTypeTest() {
-
-        var chatDto = new UpdateChatDTO();
-        chatDto.setType("chatWithoutPortal");
-        chatDto.setAppId("appId");
-        chatDto.setTopic("topic");
-
-        var exception = given()
-                .contentType(APPLICATION_JSON)
-                .when()
-                .body(chatDto)
-                .pathParam("id", "11-111")
-                .put("{id}")
-                .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract().as(ProblemDetailResponseDTO.class);
-
-        Assertions.assertNotNull(exception);
-        Assertions.assertEquals("MERGE_ENTITY_FAILED", exception.getErrorCode());
-        Assertions.assertEquals(
-                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_type'  Detail: Key (type, app_id, tenant_id)=(chatWithoutPortal, appId, default) already exists.]",
-                exception.getDetail());
-        Assertions.assertNull(exception.getInvalidParams());
 
     }
 

@@ -85,18 +85,14 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         chatDto.setType("cg");
         chatDto.setAppId("appId");
 
-        exception = given().when()
+        given().when()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(chatDto)
                 .post()
                 .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract().as(ProblemDetailResponseDTO.class);
+                .statusCode(CREATED.getStatusCode());
 
-        assertThat(exception.getErrorCode()).isEqualTo("PERSIST_ENTITY_FAILED");
-        assertThat(exception.getDetail()).isEqualTo(
-                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_type'  Detail: Key (type, app_id, tenant_id)=(cg, appId, tenant-100) already exists.]");
     }
 
     @Test
@@ -340,33 +336,6 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         assertThat(dto).isNotNull();
         assertThat(dto.getTopic()).isEqualTo(chatDto.getTopic());
-
-    }
-
-    @Test
-    void updateChatWithExistingTypeTest() {
-
-        var chatDto = new UpdateChatDTO();
-        chatDto.setType("chatWithoutPortal");
-        chatDto.setAppId("appId");
-        chatDto.setTopic("topic");
-
-        var exception = given()
-                .contentType(APPLICATION_JSON)
-                .header(APM_HEADER_PARAM, createToken("org1"))
-                .when()
-                .body(chatDto)
-                .put("11-111")
-                .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract().as(ProblemDetailResponseDTO.class);
-
-        Assertions.assertNotNull(exception);
-        Assertions.assertEquals("MERGE_ENTITY_FAILED", exception.getErrorCode());
-        Assertions.assertEquals(
-                "could not execute statement [ERROR: duplicate key value violates unique constraint 'chat_type'  Detail: Key (type, app_id, tenant_id)=(chatWithoutPortal, appId, tenant-100) already exists.]",
-                exception.getDetail());
-        Assertions.assertNull(exception.getInvalidParams());
 
     }
 
