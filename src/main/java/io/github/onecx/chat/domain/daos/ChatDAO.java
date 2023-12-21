@@ -41,8 +41,12 @@ public class ChatDAO extends AbstractDAO<Chat> {
             var cq = cb.createQuery(Chat.class);
             var root = cq.from(Chat.class);
 
+            if (criteria.getTopic() != null && !criteria.getTopic().isBlank()) {
+                cq.where(cb.like(root.get(Chat_.topic), QueryCriteriaUtil.wildcard(criteria.getTopic())));
+            }
+
             if (criteria.getType() != null && !criteria.getType().isBlank()) {
-                cq.where(cb.like(root.get(Chat_.type), QueryCriteriaUtil.wildcard(criteria.getType())));
+                cq.where(cb.equal(root.get(Chat_.type), criteria.getType()));
             }
 
             return createPageQuery(cq, Page.of(criteria.getPageNumber(), criteria.getPageSize())).getPageResult();

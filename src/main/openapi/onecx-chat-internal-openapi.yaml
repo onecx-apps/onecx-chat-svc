@@ -182,8 +182,6 @@ components:
           type: string
         topic:
           type: string
-        summary:
-          type: string
         appId:
           type: string                                        
         pageNumber:

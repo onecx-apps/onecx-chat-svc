@@ -82,7 +82,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // create chat with existing type
         chatDto = new CreateChatDTO();
-        chatDto.setType("cg");
+        chatDto.setType("HUMAN_CHAT");
         chatDto.setAppId("appId");
 
         given().when()
@@ -141,7 +141,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         var dto = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
-                .pathParam("type", "chatWithoutPortal")
+                .pathParam("type", "AI_CHAT")
                 .get("/type/{type}")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
@@ -149,13 +149,13 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("chatWithoutPortal");
+        assertThat(dto.getType()).isEqualTo("AI_CHAT");
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
-                .pathParam("type", "chatWithoutPortal")
+                .pathParam("type", "AI_CHAT")
                 .get("/type/{type}")
                 .then().statusCode(NOT_FOUND.getStatusCode());
     }
@@ -173,7 +173,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("chatWithoutPortal");
+        assertThat(dto.getType()).isEqualTo("AI_CHAT");
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
@@ -191,7 +191,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("cg");
+        assertThat(dto.getType()).isEqualTo("HUMAN_CHAT");
         assertThat(dto.getId()).isEqualTo("11-111");
 
     }
@@ -280,7 +280,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(2);
         assertThat(data.getStream()).isNotNull().hasSize(2);
 
-        criteria.setType("cg");
+        criteria.setType("HUMAN_CHAT");
         data = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))

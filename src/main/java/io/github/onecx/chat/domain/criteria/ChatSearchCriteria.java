@@ -13,8 +13,6 @@ public class ChatSearchCriteria {
 
     private String topic;
 
-    private String summary;
-
     private String appId;
 
     private Integer pageNumber;

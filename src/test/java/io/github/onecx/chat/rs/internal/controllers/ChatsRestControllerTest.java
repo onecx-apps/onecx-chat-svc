@@ -50,7 +50,7 @@ class ChatsRestControllerTest extends AbstractTest {
     void getChatByChatDefinitionNameTest() {
         var dto = given()
                 .contentType(APPLICATION_JSON)
-                .pathParam("type", "chatWithoutPortal")
+                .pathParam("type", "AI_CHAT")
                 .get("/type/{type}")
                 .then().statusCode(OK.getStatusCode())
                 .contentType(APPLICATION_JSON)
@@ -58,7 +58,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("chatWithoutPortal");
+        assertThat(dto.getType()).isEqualTo("AI_CHAT");
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
@@ -81,7 +81,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("chatWithoutPortal");
+        assertThat(dto.getType()).isEqualTo("AI_CHAT");
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
@@ -100,7 +100,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("cg");
+        assertThat(dto.getType()).isEqualTo("HUMAN_CHAT");
         assertThat(dto.getId()).isEqualTo("11-111");
 
     }
@@ -155,7 +155,7 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(3);
         assertThat(data.getStream()).isNotNull().hasSize(3);
 
-        criteria.setType("cg");
+        criteria.setType("HUMAN_CHAT");
         data = given()
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
