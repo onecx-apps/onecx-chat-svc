@@ -16,7 +16,8 @@ import lombok.Setter;
 public class Chat extends TraceableEntity {
 
     @Column(name = "TYPE")
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private ChatType type;
 
     @TenantId
     @Column(name = "TENANT_ID")
@@ -30,5 +31,10 @@ public class Chat extends TraceableEntity {
 
     @Column(name = "APP_ID")
     private String appId;
+
+    public enum ChatType {
+        HUMAN_CHAT,
+        AI_CHAT
+    }
 
 }

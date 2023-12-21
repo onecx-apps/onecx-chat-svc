@@ -152,34 +152,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ChatPageResult'
-  /internal/chats/type/{type}:
-    get:
-      tags:
-        - chatsInternal
-      description: Load a single chat definition
-      operationId: getChatByType
-      parameters:
-        - name: type
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Chat'
-        "404":
-          description: Not found
 components:
   schemas:
+    ChatType:
+      type: string
+      enum:
+        - HUMAN_CHAT
+        - AI_CHAT
     ChatSearchCriteria:
       type: object
       properties:
         type:
-          type: string
+          $ref: '#/components/schemas/ChatType'
         topic:
           type: string
         appId:
@@ -233,7 +217,7 @@ components:
         id:
           type: string
         type:
-          type: string
+          $ref: '#/components/schemas/ChatType'
         topic:
           type: string
         summary:
@@ -292,7 +276,7 @@ components:
         id:
           type: string
         type:
-          type: string
+          $ref: '#/components/schemas/ChatType'
         topic:
           type: string
         summary:
@@ -318,7 +302,7 @@ components:
         id:
           type: string
         type:
-          type: string
+          $ref: '#/components/schemas/ChatType'
         topic:
           type: string
         summary:

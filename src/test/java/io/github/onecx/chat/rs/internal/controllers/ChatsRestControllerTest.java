@@ -47,28 +47,6 @@ class ChatsRestControllerTest extends AbstractTest {
     }
 
     @Test
-    void getChatByChatDefinitionNameTest() {
-        var dto = given()
-                .contentType(APPLICATION_JSON)
-                .pathParam("type", "AI_CHAT")
-                .get("/type/{type}")
-                .then().statusCode(OK.getStatusCode())
-                .contentType(APPLICATION_JSON)
-                .extract()
-                .body().as(ChatDTO.class);
-
-        assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("AI_CHAT");
-        assertThat(dto.getId()).isEqualTo("22-222");
-
-        given()
-                .contentType(APPLICATION_JSON)
-                .pathParam("type", "none-exists")
-                .get("/type/{type}")
-                .then().statusCode(NOT_FOUND.getStatusCode());
-    }
-
-    @Test
     void getChatByIdTest() {
 
         var dto = given()
@@ -81,7 +59,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("AI_CHAT");
+        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.AI_CHAT);
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
@@ -100,7 +78,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("HUMAN_CHAT");
+        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_CHAT);
         assertThat(dto.getId()).isEqualTo("11-111");
 
     }
@@ -140,7 +118,7 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(3);
         assertThat(data.getStream()).isNotNull().hasSize(3);
 
-        criteria.setType(" ");
+        criteria.setType(null);
         data = given()
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
@@ -155,7 +133,7 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(3);
         assertThat(data.getStream()).isNotNull().hasSize(3);
 
-        criteria.setType("HUMAN_CHAT");
+        criteria.setType(ChatTypeDTO.HUMAN_CHAT);
         data = given()
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
@@ -177,7 +155,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // update none existing chat
         var chatDto = new UpdateChatDTO();
-        chatDto.setType("test01");
+        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
         chatDto.setTopic("topic-update");
 
         given()

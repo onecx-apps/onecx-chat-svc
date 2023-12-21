@@ -29,7 +29,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // create chat
         var chatDto = new CreateChatDTO();
-        chatDto.setType("test01");
+        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
         chatDto.setAppId("appId");
         chatDto.setTopic("topic");
         chatDto.setSummary("summary");
@@ -82,7 +82,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // create chat with existing type
         chatDto = new CreateChatDTO();
-        chatDto.setType("HUMAN_CHAT");
+        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
         chatDto.setAppId("appId");
 
         given().when()
@@ -137,30 +137,6 @@ class ChatsRestControllerTenantTest extends AbstractTest {
     }
 
     @Test
-    void getChatByChatDefinitionNameTest() {
-        var dto = given()
-                .contentType(APPLICATION_JSON)
-                .header(APM_HEADER_PARAM, createToken("org1"))
-                .pathParam("type", "AI_CHAT")
-                .get("/type/{type}")
-                .then().statusCode(OK.getStatusCode())
-                .contentType(APPLICATION_JSON)
-                .extract()
-                .body().as(ChatDTO.class);
-
-        assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("AI_CHAT");
-        assertThat(dto.getId()).isEqualTo("22-222");
-
-        given()
-                .contentType(APPLICATION_JSON)
-                .header(APM_HEADER_PARAM, createToken("org2"))
-                .pathParam("type", "AI_CHAT")
-                .get("/type/{type}")
-                .then().statusCode(NOT_FOUND.getStatusCode());
-    }
-
-    @Test
     void getChatByIdTest() {
 
         var dto = given()
@@ -173,7 +149,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("AI_CHAT");
+        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.AI_CHAT);
         assertThat(dto.getId()).isEqualTo("22-222");
 
         given()
@@ -191,7 +167,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo("HUMAN_CHAT");
+        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_CHAT);
         assertThat(dto.getId()).isEqualTo("11-111");
 
     }
@@ -264,7 +240,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(2);
         assertThat(data.getStream()).isNotNull().hasSize(2);
 
-        criteria.setType(" ");
+        criteria.setType(null);
         data = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
@@ -280,7 +256,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(2);
         assertThat(data.getStream()).isNotNull().hasSize(2);
 
-        criteria.setType("HUMAN_CHAT");
+        criteria.setType(ChatTypeDTO.HUMAN_CHAT);
         data = given()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
@@ -303,7 +279,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // update none existing chat
         var chatDto = new UpdateChatDTO();
-        chatDto.setType("test01");
+        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
         chatDto.setTopic("topic-update");
 
         given()

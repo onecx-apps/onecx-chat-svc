@@ -19,6 +19,11 @@ paths:
           description: ok
 components:
   schemas:
+    ChatType:
+      type: string
+      enum:
+        - HUMAN_CHAT
+        - AI_CHAT   
     DataImport:
       type: object
       properties:
@@ -37,7 +42,7 @@ components:
         tenantId:
           type: string
         type:
-          type: string
+          $ref: '#/components/schemas/ChatType'
         topic:
           type: string
         summary:

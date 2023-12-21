@@ -1,5 +1,6 @@
 package io.github.onecx.chat.domain.criteria;
 
+import io.github.onecx.chat.domain.models.Chat.ChatType;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import lombok.Setter;
 @RegisterForReflection
 public class ChatSearchCriteria {
 
-    private String type;
+    private ChatType type;
 
     private String topic;
 

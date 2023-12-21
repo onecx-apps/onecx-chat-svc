@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gen.io.github.onecx.chat.di.v1.model.DataImportDTOV1;
 import io.github.onecx.chat.domain.daos.ChatDAO;
 import io.github.onecx.chat.domain.di.mappers.DataImportMapperV1;
+import io.github.onecx.chat.domain.models.Chat;
 
 @DataImport("chat")
 public class ChatDataImportServiceV1 implements DataImportService {
@@ -85,7 +86,7 @@ public class ChatDataImportServiceV1 implements DataImportService {
                 ApplicationContext.start(ctx);
                 // import chats
                 var chat = mapper.importChat(dto);
-                chat.setType(type);
+                chat.setType(Chat.ChatType.valueOf(type));
                 chatDAO.create(chat);
             } finally {
                 ApplicationContext.close();

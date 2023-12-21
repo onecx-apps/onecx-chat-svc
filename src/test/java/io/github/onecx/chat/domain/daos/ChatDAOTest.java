@@ -32,10 +32,6 @@ class ChatDAOTest {
                 ChatDAO.ErrorKeys.FIND_ENTITY_BY_ID_FAILED);
         methodExceptionTests(() -> dao.findChatsByCriteria(null),
                 ChatDAO.ErrorKeys.ERROR_FIND_CHATS_BY_CRITERIA);
-        methodExceptionTests(() -> dao.findChatByType(null),
-                ChatDAO.ErrorKeys.ERROR_FIND_CHAT_BY_TYPE);
-        methodExceptionTests(() -> dao.findChatByType(null),
-                ChatDAO.ErrorKeys.ERROR_FIND_CHAT_BY_TYPE);
         methodExceptionTests(() -> dao.findAll(0, 2),
                 ChatDAO.ErrorKeys.ERROR_FIND_ALL_CHAT_PAGE);
     }

@@ -45,7 +45,7 @@ public class ChatDAO extends AbstractDAO<Chat> {
                 cq.where(cb.like(root.get(Chat_.topic), QueryCriteriaUtil.wildcard(criteria.getTopic())));
             }
 
-            if (criteria.getType() != null && !criteria.getType().isBlank()) {
+            if (criteria.getType() != null) {
                 cq.where(cb.equal(root.get(Chat_.type), criteria.getType()));
             }
 
@@ -66,27 +66,10 @@ public class ChatDAO extends AbstractDAO<Chat> {
         }
     }
 
-    public Chat findChatByType(String type) {
-        try {
-            var cb = this.getEntityManager().getCriteriaBuilder();
-            var cq = cb.createQuery(Chat.class);
-            var root = cq.from(Chat.class);
-            cq.where(cb.equal(root.get(Chat_.type), type));
-
-            return this.getEntityManager().createQuery(cq).getSingleResult();
-
-        } catch (NoResultException nre) {
-            return null;
-        } catch (Exception ex) {
-            throw new DAOException(ErrorKeys.ERROR_FIND_CHAT_BY_TYPE, ex);
-        }
-    }
-
     public enum ErrorKeys {
 
         FIND_ENTITY_BY_ID_FAILED,
         ERROR_FIND_CHATS_BY_CRITERIA,
         ERROR_FIND_ALL_CHAT_PAGE,
-        ERROR_FIND_CHAT_BY_TYPE,
     }
 }

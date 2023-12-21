@@ -1,12 +1,12 @@
 {
   "chats": {
-    "Chat1": {
+    "AI_CHAT": {
       "tenantId": "default",
-      "type": "Chat1"
+      "type": "AI_CHAT"
     },
-    "Chat2": {
+    "HUMAN_CHAT": {
       "tenantId": "default",
-      "type": "Chat2"
+      "type": "HUMAN_CHAT"
     }
   }
 }
