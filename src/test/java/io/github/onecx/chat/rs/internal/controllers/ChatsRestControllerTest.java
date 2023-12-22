@@ -148,6 +148,23 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(1);
         assertThat(data.getStream()).isNotNull().hasSize(1);
 
+        criteria.setType(null);
+        criteria.setCreationUser("user1");
+        data = given()
+                .contentType(APPLICATION_JSON)
+                .header(APM_HEADER_PARAM, createToken("org1"))
+                .body(criteria)
+                .post("/search")
+                .then()
+                .statusCode(OK.getStatusCode())
+                .contentType(APPLICATION_JSON)
+                .extract()
+                .as(ChatPageResultDTO.class);
+
+        assertThat(data).isNotNull();
+        assertThat(data.getTotalElements()).isEqualTo(2);
+        assertThat(data.getStream()).isNotNull().hasSize(2);
+
     }
 
     @Test

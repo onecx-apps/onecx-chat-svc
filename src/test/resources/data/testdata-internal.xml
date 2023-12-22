@@ -2,9 +2,9 @@
 <dataset>
 
 	<!-- CHAT -->
-	<CHAT guid="chat-11-111" optlock="0" type="HUMAN_CHAT" app_id="appId" tenant_id="default" />
-	<CHAT guid="chat-22-222" optlock="0" type="AI_CHAT" app_id="appId"  tenant_id="default" />
-	<CHAT guid="chat-DELETE_1" optlock="0" type="AI_CHAT" app_id="appId" tenant_id="default" />
+	<CHAT guid="chat-11-111" optlock="0" type="HUMAN_CHAT" app_id="appId" tenant_id="default" creationuser="user1"/>
+	<CHAT guid="chat-22-222" optlock="0" type="AI_CHAT" app_id="appId"  tenant_id="default" creationuser="user1" />
+	<CHAT guid="chat-DELETE_1" optlock="0" type="AI_CHAT" app_id="appId" tenant_id="default" creationuser="user2"/>
 
 	<!-- MESSAGE -->
 	<MESSAGE guid="msg-11-111" optlock="0" type="ASSISTANT" text="How can I help you?" user_name="Bot" app_id="appId" tenant_id="default" chat_id="chat-22-222"/>

@@ -16,6 +16,8 @@ public class ChatSearchCriteria {
 
     private String appId;
 
+    private String creationUser;
+
     private Integer pageNumber;
 
     private Integer pageSize;

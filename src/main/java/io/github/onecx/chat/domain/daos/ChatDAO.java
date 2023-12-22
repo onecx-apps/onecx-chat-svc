@@ -49,6 +49,10 @@ public class ChatDAO extends AbstractDAO<Chat> {
                 cq.where(cb.equal(root.get(Chat_.type), criteria.getType()));
             }
 
+            if (criteria.getCreationUser() != null) {
+                cq.where(cb.equal(root.get(Chat_.creationUser), criteria.getCreationUser()));
+            }
+
             return createPageQuery(cq, Page.of(criteria.getPageNumber(), criteria.getPageSize())).getPageResult();
         } catch (Exception ex) {
             throw new DAOException(ErrorKeys.ERROR_FIND_CHATS_BY_CRITERIA, ex);

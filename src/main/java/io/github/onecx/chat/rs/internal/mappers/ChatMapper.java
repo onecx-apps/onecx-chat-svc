@@ -44,7 +44,7 @@ public abstract class ChatMapper {
     @Mapping(target = "modificationCount", ignore = true)
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
-    public abstract Message create(MessageDTO dto);
+    public abstract Message createMessage(CreateMessageDTO dto);
 
     public abstract List<ChatDTO> map(Stream<Chat> entity);
 
