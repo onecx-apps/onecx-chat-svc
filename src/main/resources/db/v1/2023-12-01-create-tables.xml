@@ -43,7 +43,7 @@
                 </column>
                 <column name="type" type="VARCHAR(255)"/>
                 <column name="user_name" type="VARCHAR(255)"/>
-                <column name="message" type="VARCHAR(4000)"/>
+                <column name="text" type="VARCHAR(4000)"/>
                 <column name="reliability" type="float"/>
                 <column name="app_id" type="VARCHAR(255)"/>                
                 <column name="tenant_id" type="varchar(255 BYTE)">
@@ -53,6 +53,7 @@
                     <constraints nullable="false"/>
                 </column>
             </createTable>
+            <addForeignKeyConstraint baseColumnNames="chat_id" baseTableName="message" constraintName="fk_msg2chat" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="guid" referencedTableName="chat" validate="true"/>            
         </changeSet>        
     </databaseChangeLog>
 

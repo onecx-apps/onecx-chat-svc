@@ -23,7 +23,13 @@ components:
       type: string
       enum:
         - HUMAN_CHAT
-        - AI_CHAT   
+        - AI_CHAT
+    MessageType:
+      type: string
+      enum:
+        - HUMAN
+        - ASSISTANT
+        - ACTION
     DataImport:
       type: object
       properties:

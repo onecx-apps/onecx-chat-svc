@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.criteria.ChatSearchCriteria;
 import io.github.onecx.chat.domain.models.Chat;
+import io.github.onecx.chat.domain.models.Message;
 
 @Mapper(uses = { OffsetDateTimeMapper.class })
 public abstract class ChatMapper {
@@ -35,12 +36,23 @@ public abstract class ChatMapper {
     @Mapping(target = "modificationCount", ignore = true)
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
+    @Mapping(target = "messages", ignore = true)
     public abstract Chat create(CreateChatDTO object);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "controlTraceabilityManual", ignore = true)
+    @Mapping(target = "modificationCount", ignore = true)
+    @Mapping(target = "persisted", ignore = true)
+    @Mapping(target = "tenantId", ignore = true)
+    public abstract Message create(MessageDTO dto);
 
     public abstract List<ChatDTO> map(Stream<Chat> entity);
 
     @Mapping(target = "version", source = "modificationCount")
     public abstract ChatDTO map(Chat chat);
+
+    @Mapping(target = "version", source = "modificationCount")
+    public abstract MessageDTO map(Message chat);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
@@ -51,6 +63,7 @@ public abstract class ChatMapper {
     @Mapping(target = "modificationCount", ignore = true)
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
+    @Mapping(target = "messages", ignore = true)
     public abstract void update(UpdateChatDTO chatDTO, @MappingTarget Chat entity);
 
     @Mapping(target = "id", ignore = true)
@@ -58,6 +71,7 @@ public abstract class ChatMapper {
     @Mapping(target = "modificationCount", ignore = true)
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
+    @Mapping(target = "messages", ignore = true)
     public abstract Chat map(UpdateChatDTO object);
 
     @Named("properties")

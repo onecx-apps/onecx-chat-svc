@@ -7,7 +7,74 @@ servers:
   - url: "http://onecx-chat-svc:8080"
 tags:
   - name: chatsInternal
+  - name: messagesInternal  
 paths:
+  /internal/chat/{id}/messages:
+    get:
+      tags:
+        - messagesInternal
+      description: Return list of messages
+      operationId: getChatMessages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string      
+        - name: pageNumber
+          in: query
+          schema:
+            format: int32
+            description: The number of page.
+            default: 0
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            format: int32
+            description: The size of page
+            default: 10
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+  /internal/messages:
+    post:
+      tags:
+        - messagesInternal
+      description: creates a Message
+      operationId: createMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessage'
+      responses:
+        "201":
+          description: New message created
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'                  
   /internal/chats:
     get:
       tags:
@@ -68,6 +135,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetailResponse'
+
   /internal/chats/{id}:
     get:
       tags:
@@ -159,6 +227,12 @@ components:
       enum:
         - HUMAN_CHAT
         - AI_CHAT
+    MessageType:
+      type: string
+      enum:
+        - HUMAN
+        - ASSISTANT        
+        - ACTION
     ChatSearchCriteria:
       type: object
       properties:
@@ -198,6 +272,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Chat'
+    MessagePageResult:
+      type: object
+      properties:
+        totalElements:
+          format: int64
+          description: The total elements in the resource.
+          type: integer
+        number:
+          format: int32
+          type: integer
+        size:
+          format: int32
+          type: integer
+        totalPages:
+          format: int64
+          type: integer
+        stream:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'            
     Chat:
       required:
         - type
@@ -224,6 +318,34 @@ components:
           type: string
         appId:
           type: string
+    Message:
+      required:
+        - type
+      type: object
+      properties:
+        version:
+          format: int32
+          type: integer
+        creationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        creationUser:
+          type: string
+        modificationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        modificationUser:
+          type: string
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/MessageType'
+        text:
+          type: string
+        userName:
+          type: string
+        reliability:
+          type: float
+        appId:
+          type: string          
     OffsetDateTime:
       format: date-time
       type: string
@@ -257,6 +379,34 @@ components:
           type: string
         message:
           type: string
+    CreateMessage:
+      required:
+        - type
+      type: object
+      properties:
+        version:
+          format: int32
+          type: integer
+        creationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        creationUser:
+          type: string
+        modificationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        modificationUser:
+          type: string
+        id:
+          type: string
+        text:
+          type: string          
+        type:
+          $ref: '#/components/schemas/MessageType'
+        userName:
+          type: string
+        reliability:
+          type: float
+        appId:
+          type: string    
     CreateChat:
       required:
         - type
