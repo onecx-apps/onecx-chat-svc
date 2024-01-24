@@ -1,0 +1,12 @@
+{
+  "chats": {
+    "AI_CHAT": {
+      "tenantId": "default",
+      "type": "AI_CHAT"
+    },
+    "HUMAN_CHAT": {
+      "tenantId": "default",
+      "type": "HUMAN_CHAT"
+    }
+  }
+}
