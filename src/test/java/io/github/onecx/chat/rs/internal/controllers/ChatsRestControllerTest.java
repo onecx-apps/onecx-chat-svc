@@ -83,6 +83,8 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(dto).isNotNull();
         assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_CHAT);
         assertThat(dto.getId()).isEqualTo("chat-11-111");
+        assertThat(dto.getParticipants()).isNotNull();
+        assertThat(dto.getParticipants()).isNotNull().hasSize(1);
 
     }
 
@@ -152,7 +154,7 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(data.getStream()).isNotNull().hasSize(1);
 
         criteria.setType(null);
-        criteria.setCreationUser("user1");
+        criteria.setParticipant(null);
         data = given()
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
@@ -164,8 +166,24 @@ class ChatsRestControllerTest extends AbstractTest {
                 .as(ChatPageResultDTO.class);
 
         assertThat(data).isNotNull();
-        assertThat(data.getTotalElements()).isEqualTo(2);
-        assertThat(data.getStream()).isNotNull().hasSize(2);
+        assertThat(data.getTotalElements()).isEqualTo(3);
+        assertThat(data.getStream()).isNotNull().hasSize(3);
+
+        criteria.setType(null);
+        criteria.setParticipant("user1");
+        data = given()
+                .contentType(APPLICATION_JSON)
+                .body(criteria)
+                .post("/search")
+                .then()
+                .statusCode(OK.getStatusCode())
+                .contentType(APPLICATION_JSON)
+                .extract()
+                .as(ChatPageResultDTO.class);
+
+        assertThat(data).isNotNull();
+        assertThat(data.getTotalElements()).isEqualTo(1);
+        assertThat(data.getStream()).isNotNull().hasSize(1);
 
     }
 
@@ -218,6 +236,13 @@ class ChatsRestControllerTest extends AbstractTest {
         chatDto.setAppId("appId");
         chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
 
+        ParticipantDTO participantDto = new ParticipantDTO();
+        participantDto.setEmail("example@email.com");
+        participantDto.setUserId("jdoe");
+        participantDto.setUserName("John Doe");
+        participantDto.setType(ParticipantTypeDTO.HUMAN);
+        chatDto.addParticipantsItem(participantDto);
+
         //create human chat
         var chat = given()
                 .when()
@@ -230,11 +255,23 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         Assertions.assertNotNull(chat);
+        assertThat(chat).isNotNull();
+
+        var chatResponseDto = given()
+                .contentType(APPLICATION_JSON)
+                .pathParam("id", chat.getId())
+                .get("{id}")
+                .then().statusCode(OK.getStatusCode())
+                .contentType(APPLICATION_JSON)
+                .extract()
+                .body().as(ChatDTO.class);
+
+        assertThat(chatResponseDto).isNotNull();
+        assertThat(chatResponseDto.getParticipants()).isNotNull().isNotEmpty().hasSize(1);
 
         // create message
         var messageDto = new CreateMessageDTO();
         messageDto.setType(MessageTypeDTO.HUMAN);
-        messageDto.setAppId("appId");
         messageDto.setText("This is a human question");
         messageDto.setUserName("human");
 
@@ -268,6 +305,62 @@ class ChatsRestControllerTest extends AbstractTest {
     }
 
     @Test
+    void addParticipantTest() {
+
+        var chatDto = new CreateChatDTO();
+        chatDto.setAppId("appId");
+        chatDto.setType(ChatTypeDTO.AI_CHAT);
+
+        //create ai chat
+        var chat = given()
+                .when()
+                .contentType(APPLICATION_JSON)
+                .body(chatDto)
+                .post()
+                .then()
+                .statusCode(CREATED.getStatusCode())
+                .extract()
+                .body().as(ChatDTO.class);
+
+        Assertions.assertNotNull(chat);
+
+        // add participant
+        var addParticipantDto = new AddParticipantDTO();
+        addParticipantDto.setUserId("ne.mail");
+        addParticipantDto.setEmail("name@email.com");
+        addParticipantDto.setUserName("user");
+        addParticipantDto.setType(ParticipantTypeDTO.HUMAN);
+
+        var messageId = given()
+                .pathParam("chatId", chat.getId())
+                .when()
+                .contentType(APPLICATION_JSON)
+                .body(addParticipantDto)
+                .post("{chatId}/participants")
+                .then()
+                .statusCode(CREATED.getStatusCode())
+                .extract();
+
+        assertThat(messageId).isNotNull();
+
+        //load participants
+        var response = given()
+                .contentType(APPLICATION_JSON)
+                .pathParam("chatId", chat.getId())
+                .get("{chatId}/participants")
+                .then()
+                .statusCode(OK.getStatusCode())
+                .contentType(APPLICATION_JSON)
+                .extract().as(new TypeRef<List<ParticipantDTO>>() {
+                });
+
+        assertThat(response).isNotNull();
+        assertThat(response).isNotNull().isNotEmpty().hasSize(1);
+        assertThat(response.get(0).getType()).isEqualTo(ParticipantTypeDTO.HUMAN);
+
+    }
+
+    @Test
     void createAiChatTest() {
 
         var chatDto = new CreateChatDTO();
@@ -290,7 +383,6 @@ class ChatsRestControllerTest extends AbstractTest {
         // create message
         var messageDto = new CreateMessageDTO();
         messageDto.setType(MessageTypeDTO.HUMAN);
-        messageDto.setAppId("appId");
         messageDto.setText("This is a human question");
         messageDto.setUserName("human");
 
@@ -347,7 +439,6 @@ class ChatsRestControllerTest extends AbstractTest {
         // create message
         var messageDto = new CreateMessageDTO();
         messageDto.setType(MessageTypeDTO.HUMAN);
-        messageDto.setAppId("appId");
         messageDto.setText(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Nunc varius tortor non diam volutpat, sit amet luctus felis pharetra. Integer nec erat vel elit posuere fermentum. Vivamus ac consectetur libero. Sed varius, ligula non lacinia fringilla, elit felis malesuada lacus, et eleifend odio quam eget urna. Duis vel elit ut quam laoreet imperdiet. Aliquam quis risus vitae libero fermentum luctus. Etiam condimentum ex nec nunc hendrerit, nec euismod dui consectetur. Maecenas hendrerit pharetra odio, ac vulputate arcu. Curabitur tristique erat nec venenatis ullamcorper. Duis accumsan, augue vel cursus scelerisque, elit justo blandit ligula, eget congue purus mauris eget dui. Nullam nec ante mauris.\r\n"
                         + //

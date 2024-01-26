@@ -1,7 +1,10 @@
 package io.github.onecx.chat.domain.daos;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 
 import org.tkit.quarkus.jpa.daos.AbstractDAO;
@@ -14,6 +17,7 @@ import org.tkit.quarkus.jpa.utils.QueryCriteriaUtil;
 import io.github.onecx.chat.domain.criteria.ChatSearchCriteria;
 import io.github.onecx.chat.domain.models.Chat;
 import io.github.onecx.chat.domain.models.Chat_;
+import io.github.onecx.chat.domain.models.Participant;
 
 @ApplicationScoped
 @Transactional(Transactional.TxType.NOT_SUPPORTED)
@@ -27,7 +31,10 @@ public class ChatDAO extends AbstractDAO<Chat> {
             var cq = cb.createQuery(Chat.class);
             var root = cq.from(Chat.class);
             cq.where(cb.equal(root.get(TraceableEntity_.ID), id));
-            return this.getEntityManager().createQuery(cq).getSingleResult();
+
+            EntityGraph graph = this.em.getEntityGraph(Chat.CHAT_LOAD);
+
+            return this.getEntityManager().createQuery(cq).setHint(HINT_LOAD_GRAPH, graph).getSingleResult();
         } catch (NoResultException nre) {
             return null;
         } catch (Exception e) {
@@ -49,8 +56,10 @@ public class ChatDAO extends AbstractDAO<Chat> {
                 cq.where(cb.equal(root.get(Chat_.type), criteria.getType()));
             }
 
-            if (criteria.getCreationUser() != null) {
-                cq.where(cb.equal(root.get(Chat_.creationUser), criteria.getCreationUser()));
+            if (criteria.getParticipant() != null) {
+                Join<Chat, Participant> participantsJoin = root.join("participants");
+                Predicate predicate = cb.equal(participantsJoin.get("userId"), criteria.getParticipant());
+                cq.where(predicate);
             }
 
             return createPageQuery(cq, Page.of(criteria.getPageNumber(), criteria.getPageSize())).getPageResult();

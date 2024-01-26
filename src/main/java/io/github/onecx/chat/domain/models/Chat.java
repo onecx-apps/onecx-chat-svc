@@ -45,6 +45,10 @@ public class Chat extends TraceableEntity {
     @OrderBy("creationDate ASC")
     private Set<Message> messages = new HashSet<>();
 
+    @OneToMany(cascade = ALL, fetch = LAZY, mappedBy = "chat", orphanRemoval = true)
+    @OrderBy("creationDate ASC")
+    private Set<Participant> participants = new HashSet<>();
+
     public enum ChatType {
         HUMAN_CHAT,
         AI_CHAT

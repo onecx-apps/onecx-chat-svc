@@ -66,7 +66,65 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetailResponse'                  
+                $ref: '#/components/schemas/ProblemDetailResponse'
+  /internal/chats/{chatId}/participants:
+    get:
+      tags:
+        - chatsInternal
+      description: Return list of participants
+      operationId: getChatParticipants
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          description: The ID of the chat          
+          schema:
+            type: string      
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+    post:
+      tags:
+        - chatsInternal
+      description: add a participant
+      operationId: addParticipant
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddParticipant'
+      responses:
+        "201":
+          description: New Participant added
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'                
   /internal/chats:
     get:
       tags:
@@ -224,6 +282,11 @@ components:
         - HUMAN
         - ASSISTANT        
         - SYSTEM
+    ParticipantType:
+      type: string
+      enum:
+        - HUMAN
+        - ASSISTANT        
     ChatSearchCriteria:
       type: object
       properties:
@@ -231,8 +294,8 @@ components:
           $ref: '#/components/schemas/ChatType'
         topic:
           type: string
-        creationUser:
-          type: string          
+        participant:
+          type: string       
         appId:
           type: string                                        
         pageNumber:
@@ -311,6 +374,10 @@ components:
           type: string
         appId:
           type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'          
     Message:
       required:
         - type
@@ -337,8 +404,33 @@ components:
           type: string
         reliability:
           type: float
-        appId:
-          type: string          
+    Participant:
+      required:
+        - type
+        - userId
+      type: object
+      properties:
+        version:
+          format: int32
+          type: integer
+        creationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        creationUser:
+          type: string
+        modificationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        modificationUser:
+          type: string
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/ParticipantType'
+        userId:
+          type: string
+        userName:
+          type: string
+        email:
+          type: string
     OffsetDateTime:
       format: date-time
       type: string
@@ -398,11 +490,37 @@ components:
           type: string
         reliability:
           type: float
-        appId:
+    AddParticipant:
+      required:
+        - type
+        - userId
+      type: object
+      properties:
+        version:
+          format: int32
+          type: integer
+        creationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        creationUser:
+          type: string
+        modificationDate:
+          $ref: '#/components/schemas/OffsetDateTime'
+        modificationUser:
+          type: string
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/ParticipantType'
+        userId:
+          type: string
+        userName:
+          type: string
+        email:
           type: string
     CreateChat:
       required:
         - type
+        - participants
       type: object
       properties:
         version:
@@ -426,6 +544,10 @@ components:
           type: string
         appId:
           type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'          
     UpdateChat:
       required:
         - name
@@ -452,3 +574,7 @@ components:
           type: string
         appId:
           type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'           

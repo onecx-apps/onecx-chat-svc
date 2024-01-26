@@ -5,14 +5,14 @@ import jakarta.transaction.Transactional;
 
 import org.tkit.quarkus.jpa.daos.AbstractDAO;
 
-import io.github.onecx.chat.domain.models.Message;
+import io.github.onecx.chat.domain.models.Participant;
 
 @ApplicationScoped
 @Transactional(Transactional.TxType.NOT_SUPPORTED)
-public class MessageDAO extends AbstractDAO<Message> {
+public class ParticipantDAO extends AbstractDAO<Participant> {
 
     public enum ErrorKeys {
 
-        ERROR_CREATE_MESSAGE,
+        ERROR_CREATE_PARTICIPANT,
     }
 }

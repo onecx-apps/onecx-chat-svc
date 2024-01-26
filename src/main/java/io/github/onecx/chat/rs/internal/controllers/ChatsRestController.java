@@ -9,7 +9,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.ws.rs.Path;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -22,21 +23,25 @@ import gen.io.github.onecx.chat.rs.internal.ChatsInternalApi;
 import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.daos.ChatDAO;
 import io.github.onecx.chat.domain.daos.MessageDAO;
+import io.github.onecx.chat.domain.daos.ParticipantDAO;
 import io.github.onecx.chat.domain.models.Chat.ChatType;
 import io.github.onecx.chat.domain.models.Message;
 import io.github.onecx.chat.domain.models.Message.MessageType;
+import io.github.onecx.chat.domain.models.Participant;
 import io.github.onecx.chat.rs.internal.mappers.ChatMapper;
 import io.github.onecx.chat.rs.internal.mappers.ExceptionMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("/internal/chats") // remove this after quarkus fix ServiceExceptionMapper for impl classes
 @ApplicationScoped
 @Transactional(value = NOT_SUPPORTED)
 public class ChatsRestController implements ChatsInternalApi {
 
     @Inject
     ChatDAO dao;
+
+    @Inject
+    ParticipantDAO participantDao;
 
     @Inject
     MessageDAO msgDao;
@@ -53,11 +58,22 @@ public class ChatsRestController implements ChatsInternalApi {
     @Override
     @Transactional
     public Response createChat(CreateChatDTO createChatDTO) {
+
         var chat = mapper.create(createChatDTO);
         chat = dao.create(chat);
+
+        if (createChatDTO.getParticipants() != null && !createChatDTO.getParticipants().isEmpty()) {
+            var participants = mapper.mapParticipantDTOs(createChatDTO.getParticipants());
+            for (Participant participant : participants) {
+                participant.setChat(chat);
+                participant = participantDao.create(participant);
+            }
+
+        }
+
         return Response
                 .created(uriInfo.getAbsolutePathBuilder().path(chat.getId()).build())
-                .entity(mapper.map(chat))
+                .entity(mapper.mapChat(chat))
                 .build();
     }
 
@@ -74,7 +90,7 @@ public class ChatsRestController implements ChatsInternalApi {
         if (chat == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok(mapper.map(chat)).build();
+        return Response.ok(mapper.mapChat(chat)).build();
     }
 
     @Override
@@ -121,7 +137,6 @@ public class ChatsRestController implements ChatsInternalApi {
         if (ChatType.AI_CHAT.equals(chat.getType())) {
             //TODO call onecx-ai-svc rest api to generate answer
             Message aiMessage = new Message();
-            aiMessage.setAppId(chat.getAppId());
             aiMessage.setChat(chat);
             aiMessage.setCreationUser(ChatType.AI_CHAT.name());
             aiMessage.setModificationUser(ChatType.AI_CHAT.name());
@@ -150,7 +165,42 @@ public class ChatsRestController implements ChatsInternalApi {
 
         var messages = chat.getMessages();
         List<Message> messageList = new ArrayList<>(messages);
-        return Response.ok(mapper.mapList(messageList)).build();
+        return Response.ok(mapper.mapMessageList(messageList)).build();
+
+    }
+
+    @Override
+    public Response addParticipant(String chatId, @Valid @NotNull AddParticipantDTO addParticipantDTO) {
+
+        var chat = dao.findById(chatId);
+
+        if (chat == null) {
+            throw new ConstraintException("Chat does not exist", ChatErrorKeys.CHAT_DOES_NOT_EXIST, null);
+        }
+
+        var participant = mapper.addParticipant(addParticipantDTO);
+        participant.setChat(chat);
+        participant = participantDao.create(participant);
+
+        return Response
+                .created(uriInfo.getAbsolutePathBuilder().path(participant.getId()).build())
+                .build();
+
+    }
+
+    @Override
+    public Response getChatParticipants(String chatId) {
+
+        var chat = dao.findById(chatId);
+
+        if (chat == null || chat.getParticipants() == null) {
+            // Handle the case where chat or its messages are null
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        var participants = chat.getParticipants();
+        List<Participant> participantList = new ArrayList<>(participants);
+        return Response.ok(mapper.mapParticipantList(participantList)).build();
 
     }
 

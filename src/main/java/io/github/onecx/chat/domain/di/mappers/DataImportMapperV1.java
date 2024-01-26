@@ -30,6 +30,7 @@ public abstract class DataImportMapperV1 {
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "messages", ignore = true)
+    @Mapping(target = "participants", ignore = true)
     public abstract Chat importChat(DataImportChatDTOV1 dto);
 
     @Named("properties")
