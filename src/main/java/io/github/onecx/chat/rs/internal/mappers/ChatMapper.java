@@ -1,5 +1,7 @@
 package io.github.onecx.chat.rs.internal.mappers;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,16 +16,21 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.mapstruct.ValueMapping;
 import org.tkit.quarkus.jpa.daos.PageResult;
 import org.tkit.quarkus.rs.mappers.OffsetDateTimeMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import gen.io.github.onecx.ai.clients.model.ChatMessage;
+import gen.io.github.onecx.ai.clients.model.ChatMessage.TypeEnum;
+import gen.io.github.onecx.ai.clients.model.Conversation;
 import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.criteria.ChatSearchCriteria;
 import io.github.onecx.chat.domain.models.Chat;
 import io.github.onecx.chat.domain.models.Message;
+import io.github.onecx.chat.domain.models.Message.MessageType;
 import io.github.onecx.chat.domain.models.Participant;
 import io.github.onecx.chat.domain.models.Participant.ParticipantType;
 
@@ -157,6 +164,23 @@ public abstract class ChatMapper {
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "messages", ignore = true)
     public abstract Chat map(UpdateChatDTO object);
+
+    @Mapping(source = "id", target = "conversationId")
+    @Mapping(source = "messages", target = "history")
+    @Mapping(target = "conversationType", ignore = true)
+    public abstract Conversation mapChat2Conversation(Chat object);
+
+    @Mapping(source = "id", target = "conversationId")
+    @Mapping(source = "text", target = "message")
+    @Mapping(target = "correlationId", ignore = true)
+    public abstract ChatMessage mapMessage(Message object);
+
+    @ValueMapping(source = "HUMAN", target = "USER")
+    public abstract TypeEnum mapMessage(MessageType object);
+
+    public Long mapTime(LocalDateTime time) {
+        return time.toEpochSecond(ZoneOffset.UTC);
+    }
 
     @Named("properties")
     public String mapToString(Object properties) {

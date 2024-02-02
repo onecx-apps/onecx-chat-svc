@@ -3,10 +3,7 @@
     "id": "1",
     "httpRequest": {
       "method": "POST",
-      "path": "/chat",
-      "headers": {
-        "Content-Type": { "equalTo": "application/json" }
-      }
+      "path": "/ai/chat"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -26,13 +23,10 @@
     "id": "2",
     "httpRequest": {
       "method": "GET",
-      "path": "/conversation/123456"
+      "path": "/ai/conversation/123456"
     },
     "httpResponse": {
       "statusCode": 200,
-      "headers": {
-        "Content-Type": "application/json"
-      },
       "body": {
         "conversationId": "123456",
         "history": [
@@ -52,10 +46,7 @@
     "id": "3",
     "httpRequest": {
       "method": "POST",
-      "path": "/startConversation",
-      "headers": {
-        "Content-Type": { "equalTo": "application/json" }
-      }
+      "path": "/ai/startConversation",
     },
     "httpResponse": {
       "statusCode": 200,

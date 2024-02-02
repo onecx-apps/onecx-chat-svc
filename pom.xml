@@ -125,7 +125,10 @@
             <artifactId>quarkus-mockserver</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>io.quarkiverse.openapi.generator</groupId>
+            <artifactId>quarkus-openapi-generator</artifactId>
+        </dependency>
 
 
         <!-- TEST -->

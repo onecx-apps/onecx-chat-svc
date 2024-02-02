@@ -21,6 +21,9 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.tkit.quarkus.jpa.exceptions.ConstraintException;
 
 import gen.io.github.onecx.ai.clients.api.AiChatApi;
+import gen.io.github.onecx.ai.clients.model.ChatMessage;
+import gen.io.github.onecx.ai.clients.model.ChatRequest;
+import gen.io.github.onecx.ai.clients.model.Conversation;
 import gen.io.github.onecx.chat.rs.internal.ChatsInternalApi;
 import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.daos.ChatDAO;
@@ -28,7 +31,6 @@ import io.github.onecx.chat.domain.daos.MessageDAO;
 import io.github.onecx.chat.domain.daos.ParticipantDAO;
 import io.github.onecx.chat.domain.models.Chat.ChatType;
 import io.github.onecx.chat.domain.models.Message;
-import io.github.onecx.chat.domain.models.Message.MessageType;
 import io.github.onecx.chat.domain.models.Participant;
 import io.github.onecx.chat.rs.internal.mappers.ChatMapper;
 import io.github.onecx.chat.rs.internal.mappers.ExceptionMapper;
@@ -142,19 +144,16 @@ public class ChatsRestController implements ChatsInternalApi {
 
         if (ChatType.AI_CHAT.equals(chat.getType())) {
 
-            var chatMessages = chat.getMessages().add(message);
+            Conversation conversation = mapper.mapChat2Conversation(chat);
+            ChatMessage chatMessage = mapper.mapMessage(message);
 
-            //TODO call onecx-ai-svc rest api to generate answer
-            Message aiMessage = new Message();
-            aiMessage.setChat(chat);
-            aiMessage.setCreationUser(ChatType.AI_CHAT.name());
-            aiMessage.setModificationUser(ChatType.AI_CHAT.name());
-            aiMessage.setUserName(ChatType.AI_CHAT.name());
-            aiMessage.setReliability(0.8f);
-            aiMessage.setTenantId(chat.getTenantId());
-            aiMessage.setText("Generated AI Answer text");
-            aiMessage.setType(MessageType.ASSISTANT);
-            aiMessage = msgDao.create(aiMessage);
+            ChatRequest chatRequest = new ChatRequest();
+            chatRequest.chatMessage(chatMessage);
+            chatRequest.conversation(conversation);
+            Response response = aiChatClient.chat(chatRequest);
+            ChatMessage chatMessageResponse = (ChatMessage) response.getEntity();
+            System.out.println(chatMessageResponse);
+
         }
 
         return Response
