@@ -151,8 +151,12 @@ public class ChatsRestController implements ChatsInternalApi {
             chatRequest.chatMessage(chatMessage);
             chatRequest.conversation(conversation);
             Response response = aiChatClient.chat(chatRequest);
-            ChatMessage chatMessageResponse = (ChatMessage) response.getEntity();
-            System.out.println(chatMessageResponse);
+
+            var chatResponse = response.readEntity(ChatMessage.class);
+
+            var responseMessage = mapper.mapAiSvcMessage(chatResponse);
+            responseMessage.setChat(chat);
+            msgDao.create(responseMessage);
 
         }
 

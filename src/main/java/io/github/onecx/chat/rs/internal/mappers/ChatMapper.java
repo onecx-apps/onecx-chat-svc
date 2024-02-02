@@ -1,6 +1,8 @@
 package io.github.onecx.chat.rs.internal.mappers;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,6 +16,7 @@ import jakarta.inject.Inject;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.ValueMapping;
@@ -178,9 +181,29 @@ public abstract class ChatMapper {
     @ValueMapping(source = "HUMAN", target = "USER")
     public abstract TypeEnum mapMessage(MessageType object);
 
-    public Long mapTime(LocalDateTime time) {
+    public Long mapLocalDateTime(LocalDateTime time) {
         return time.toEpochSecond(ZoneOffset.UTC);
     }
+
+    public LocalDateTime mapLongTime(Long timestamp) {
+        return Instant.ofEpochSecond(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    @ValueMapping(source = "USER", target = "HUMAN")
+    @ValueMapping(source = "ACTION", target = MappingConstants.NULL)
+    @Mapping(target = "controlTraceabilityManual", ignore = true)
+    @Mapping(target = "modificationCount", ignore = true)
+    @Mapping(target = "creationUser", constant = "AiSvc")
+    @Mapping(target = "modificationUser", constant = "AiSvc")
+    @Mapping(target = "persisted", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "modificationDate", ignore = true)
+    @Mapping(target = "chat", ignore = true)
+    @Mapping(target = "reliability", ignore = true)
+    @Mapping(target = "tenantId", ignore = true)
+    @Mapping(target = "text", source = "message")
+    @Mapping(target = "userName", ignore = true)
+    public abstract Message mapAiSvcMessage(ChatMessage chatResponse);
 
     @Named("properties")
     public String mapToString(Object properties) {
