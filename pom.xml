@@ -120,7 +120,20 @@
             <artifactId>mapstruct</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.quarkiverse.mockserver</groupId>
+            <artifactId>quarkus-mockserver</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+
+
         <!-- TEST -->
+        <dependency>
+            <groupId>io.quarkiverse.mockserver</groupId>
+            <artifactId>quarkus-mockserver-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
@@ -186,22 +199,29 @@
                             <modelNameSuffix>DTO</modelNameSuffix>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <executions>
                     <execution>
-                        <id>di-chat-v1</id>
+                        <id>user-profile-svc-internal</id>
+                        <phase>generate-resources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>src/main/openapi/di-chat-v1.yaml</inputSpec>
-                            <apiPackage>gen.io.github.onecx.chat.di.v1</apiPackage>
-                            <modelPackage>gen.io.github.onecx.chat.di.v1.model</modelPackage>
-                            <modelNameSuffix>DTOV1</modelNameSuffix>
-                            <skipValidateSpec>true</skipValidateSpec>
-                            <generateApis>false</generateApis>
+                            <uri>
+                                https://raw.githubusercontent.com/onecx-apps/onecx-ai-svc/main/resources/chat-openapi.yaml
+                            </uri>
+                            <outputDirectory>target/tmp/openapi</outputDirectory>
+                            <outputFileName>onecx-ai-svc-openapi.yaml</outputFileName>
+                            <skipCache>true</skipCache>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>            
         </plugins>
     </build>
 

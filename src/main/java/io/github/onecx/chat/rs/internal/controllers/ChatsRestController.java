@@ -15,10 +15,12 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.tkit.quarkus.jpa.exceptions.ConstraintException;
 
+import gen.io.github.onecx.ai.clients.api.AiChatApi;
 import gen.io.github.onecx.chat.rs.internal.ChatsInternalApi;
 import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.daos.ChatDAO;
@@ -36,6 +38,10 @@ import lombok.extern.slf4j.Slf4j;
 @ApplicationScoped
 @Transactional(value = NOT_SUPPORTED)
 public class ChatsRestController implements ChatsInternalApi {
+
+    @Inject
+    @RestClient
+    AiChatApi aiChatClient;
 
     @Inject
     ChatDAO dao;
@@ -135,6 +141,9 @@ public class ChatsRestController implements ChatsInternalApi {
         message = msgDao.create(message);
 
         if (ChatType.AI_CHAT.equals(chat.getType())) {
+
+            var chatMessages = chat.getMessages().add(message);
+
             //TODO call onecx-ai-svc rest api to generate answer
             Message aiMessage = new Message();
             aiMessage.setChat(chat);
