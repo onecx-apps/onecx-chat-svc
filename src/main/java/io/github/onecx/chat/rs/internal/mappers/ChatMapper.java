@@ -199,7 +199,6 @@ public abstract class ChatMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "modificationDate", ignore = true)
     @Mapping(target = "chat", ignore = true)
-    @Mapping(target = "reliability", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "text", source = "message")
     @Mapping(target = "userName", ignore = true)
