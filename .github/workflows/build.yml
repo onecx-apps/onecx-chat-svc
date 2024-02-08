@@ -19,5 +19,3 @@ jobs:
   build:
     uses: onecx-apps/ci-quarkus/.github/workflows/build.yml@v1
     secrets: inherit
-#    with:
-#      helmEventTargetRepository: onecx-apps/onecx-chat

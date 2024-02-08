@@ -4,7 +4,14 @@ on:
     branches: [ main ]
     paths:
       - 'docs/**'
+
 jobs:
-  release:
-    uses: onecx-apps/ci-common/.github/workflows/documentation.yml@v1
-    secrets: inherit
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger website update
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.CI_PAT }}
+          repository: onecx/docs
+          event-type: dispatch-build-website
