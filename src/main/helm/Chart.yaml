@@ -6,7 +6,7 @@ description: Onecx chat service
 keywords:
   - tenant
 sources:
-  - https://github.com/onecx/onecx-chat-svc
+  - https://github.com/onecx-apps/onecx-chat-svc
 maintainers:
   - name: Tkit Developer
     email: tkit_dev@1000kit.org
@@ -14,4 +14,4 @@ dependencies:
   - name: helm-quarkus-app
     alias: app
     version: ^0
-    repository: oci://ghcr.io/onecx/charts
+    repository: oci://ghcr.io/onecx-apps/charts
