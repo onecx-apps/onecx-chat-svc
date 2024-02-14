@@ -14,4 +14,4 @@ dependencies:
   - name: helm-quarkus-app
     alias: app
     version: ^0
-    repository: oci://ghcr.io/onecx-apps/charts
+    repository: oci://ghcr.io/onecx/charts
