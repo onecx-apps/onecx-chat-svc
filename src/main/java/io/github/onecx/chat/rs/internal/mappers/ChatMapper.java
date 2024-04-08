@@ -175,7 +175,6 @@ public abstract class ChatMapper {
 
     @Mapping(source = "id", target = "conversationId")
     @Mapping(source = "text", target = "message")
-    @Mapping(target = "correlationId", ignore = true)
     public abstract ChatMessage mapMessage(Message object);
 
     @ValueMapping(source = "HUMAN", target = "USER")
