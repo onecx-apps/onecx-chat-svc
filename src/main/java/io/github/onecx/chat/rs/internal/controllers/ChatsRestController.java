@@ -66,7 +66,6 @@ public class ChatsRestController implements ChatsInternalApi {
     @Override
     @Transactional
     public Response createChat(CreateChatDTO createChatDTO) {
-
         var chat = mapper.create(createChatDTO);
         chat = dao.create(chat);
 
@@ -150,14 +149,16 @@ public class ChatsRestController implements ChatsInternalApi {
             ChatRequest chatRequest = new ChatRequest();
             chatRequest.chatMessage(chatMessage);
             chatRequest.conversation(conversation);
-            Response response = aiChatClient.chat(chatRequest);
 
-            var chatResponse = response.readEntity(ChatMessage.class);
-
-            var responseMessage = mapper.mapAiSvcMessage(chatResponse);
-            responseMessage.setChat(chat);
-            msgDao.create(responseMessage);
-
+            try (Response response = aiChatClient.chat(chatRequest)) {
+                var chatResponse = response.readEntity(ChatMessage.class);
+                var responseMessage = mapper.mapAiSvcMessage(chatResponse);
+                responseMessage.setChat(chat);
+                msgDao.create(responseMessage);
+            } catch (Exception e) {
+                throw new ConstraintException(e.getMessage(), ChatErrorKeys.ERROR_CALLING_AI_CHAT_SERVICE,
+                        null);
+            }
         }
 
         return Response
@@ -227,7 +228,8 @@ public class ChatsRestController implements ChatsInternalApi {
     }
 
     enum ChatErrorKeys {
-        CHAT_DOES_NOT_EXIST
+        CHAT_DOES_NOT_EXIST,
+        ERROR_CALLING_AI_CHAT_SERVICE
     }
 
 }
