@@ -8,6 +8,8 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.TenantId;
 import org.tkit.quarkus.jpa.models.TraceableEntity;
 
@@ -35,17 +37,19 @@ public class Chat extends TraceableEntity {
     @Column(name = "TOPIC")
     private String topic;
 
-    @Column(name = "SUMMARY")
+    @Column(name = "SUMMARY", columnDefinition = "varchar(1000)")
     private String summary;
 
     @Column(name = "APP_ID")
     private String appId;
 
     @OneToMany(cascade = ALL, fetch = LAZY, mappedBy = "chat", orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OrderBy("creationDate ASC")
     private Set<Message> messages = new HashSet<>();
 
     @OneToMany(cascade = ALL, fetch = LAZY, mappedBy = "chat", orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OrderBy("creationDate ASC")
     private Set<Participant> participants = new HashSet<>();
 
