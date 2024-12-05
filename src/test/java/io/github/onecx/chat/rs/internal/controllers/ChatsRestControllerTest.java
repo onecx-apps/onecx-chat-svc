@@ -4,11 +4,13 @@ import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.tkit.quarkus.security.test.SecurityTestUtils.getKeycloakClientToken;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.tkit.quarkus.security.test.GenerateKeycloakClient;
 import org.tkit.quarkus.test.WithDBData;
 
 import gen.io.github.onecx.chat.rs.internal.model.*;
@@ -20,6 +22,7 @@ import io.restassured.common.mapper.TypeRef;
 @QuarkusTest
 @TestHTTPEndpoint(ChatsRestController.class)
 @WithDBData(value = "data/testdata-internal.xml", deleteBeforeInsert = true, deleteAfterTest = true, rinseAndRepeat = true)
+@GenerateKeycloakClient(clientName = "testClient", scopes = { "ocx-chat:all", "ocx-chat:read", "ocx-chat:write" })
 class ChatsRestControllerTest extends AbstractTest {
 
     @Test
@@ -27,6 +30,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // delete chat
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("id", "chat-DELETE_1")
                 .delete("{id}")
@@ -34,6 +38,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // check if chat exists
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("id", "chat-DELETE_1")
                 .get("{id}")
@@ -41,6 +46,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // delete chat in portal
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("id", "chat-11-111")
                 .delete("{id}")
@@ -53,6 +59,7 @@ class ChatsRestControllerTest extends AbstractTest {
     void getChatByIdTest() {
 
         var dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("id", "chat-22-222")
                 .get("{id}")
@@ -66,12 +73,14 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(dto.getId()).isEqualTo("chat-22-222");
 
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("id", "___")
                 .get("{id}")
                 .then().statusCode(NOT_FOUND.getStatusCode());
 
         dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("id", "chat-11-111")
                 .get("{id}")
@@ -91,6 +100,7 @@ class ChatsRestControllerTest extends AbstractTest {
     @Test
     void getChatsTest() {
         var data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .get()
                 .then()
@@ -110,6 +120,7 @@ class ChatsRestControllerTest extends AbstractTest {
         var criteria = new ChatSearchCriteriaDTO();
 
         var data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
                 .post("/search")
@@ -125,6 +136,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         criteria.setType(null);
         data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
                 .post("/search")
@@ -140,6 +152,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         criteria.setType(ChatTypeDTO.HUMAN_CHAT);
         data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
                 .post("/search")
@@ -156,6 +169,7 @@ class ChatsRestControllerTest extends AbstractTest {
         criteria.setType(null);
         criteria.setParticipant(null);
         data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
                 .post("/search")
@@ -172,6 +186,7 @@ class ChatsRestControllerTest extends AbstractTest {
         criteria.setType(null);
         criteria.setParticipant("user1");
         data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .body(criteria)
                 .post("/search")
@@ -193,6 +208,7 @@ class ChatsRestControllerTest extends AbstractTest {
         String chatId = "chat-22-222";
 
         var response = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("chatId", chatId)
                 .get("{chatId}/messages")
@@ -215,6 +231,7 @@ class ChatsRestControllerTest extends AbstractTest {
         chatDto.setSummary("summary");
 
         var exception = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
@@ -241,10 +258,12 @@ class ChatsRestControllerTest extends AbstractTest {
         participantDto.setUserId("jdoe");
         participantDto.setUserName("John Doe");
         participantDto.setType(ParticipantTypeDTO.HUMAN);
+        participantDto.setId("11");
         chatDto.addParticipantsItem(participantDto);
 
         //create human chat
         var chat = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
@@ -258,6 +277,7 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(chat).isNotNull();
 
         var chatResponseDto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("id", chat.getId())
                 .get("{id}")
@@ -276,6 +296,7 @@ class ChatsRestControllerTest extends AbstractTest {
         messageDto.setUserName("human");
 
         var messageId = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .pathParam("chatId", chat.getId())
                 .when()
                 .contentType(APPLICATION_JSON)
@@ -289,6 +310,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         //load messages
         var response = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("chatId", chat.getId())
                 .get("{chatId}/messages")
@@ -313,6 +335,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         //create ai chat
         var chat = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
@@ -332,6 +355,7 @@ class ChatsRestControllerTest extends AbstractTest {
         addParticipantDto.setType(ParticipantTypeDTO.HUMAN);
 
         var messageId = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .pathParam("chatId", chat.getId())
                 .when()
                 .contentType(APPLICATION_JSON)
@@ -345,6 +369,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         //load participants
         var response = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("chatId", chat.getId())
                 .get("{chatId}/participants")
@@ -369,6 +394,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         //create ai chat
         var chat = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
@@ -387,6 +413,7 @@ class ChatsRestControllerTest extends AbstractTest {
         messageDto.setUserName("human");
 
         var messageId = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .pathParam("chatId", chat.getId())
                 .when()
                 .contentType(APPLICATION_JSON)
@@ -400,6 +427,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         //load messages
         var response = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("chatId", chat.getId())
                 .get("{chatId}/messages")
@@ -425,6 +453,7 @@ class ChatsRestControllerTest extends AbstractTest {
         chatDto.setSummary("summary");
 
         var chat = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
@@ -455,6 +484,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         //create message
         var messageId = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .pathParam("chatId", chatId)
                 .when()
                 .contentType(APPLICATION_JSON)
@@ -468,6 +498,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         //load messages
         var response = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .pathParam("chatId", chatId)
                 .get("{chatId}/messages")
@@ -493,6 +524,7 @@ class ChatsRestControllerTest extends AbstractTest {
         chatDto.setTopic("topic-update");
 
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
                 .when()
@@ -502,6 +534,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // update chat
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .body(chatDto)
                 .when()
@@ -510,7 +543,9 @@ class ChatsRestControllerTest extends AbstractTest {
                 .then().statusCode(NO_CONTENT.getStatusCode());
 
         // download chat
-        var dto = given().contentType(APPLICATION_JSON)
+        var dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
+                .contentType(APPLICATION_JSON)
                 .body(chatDto)
                 .when()
                 .pathParam("id", "chat-11-111")
@@ -529,6 +564,7 @@ class ChatsRestControllerTest extends AbstractTest {
     void updateChatWithoutBodyTest() {
 
         var exception = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .when()
                 .pathParam("id", "update_create_new")
