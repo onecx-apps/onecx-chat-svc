@@ -28,6 +28,7 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: onecx_chat
       QUARKUS_DATASOURCE_JDBC_URL: "jdbc:postgresql://postgresdb:5432/onecx-chat?sslmode=disable"
       QUARKUS_REST_CLIENT_ONECX_AI_SVC_URL: "http://onecx-ai-svc:8080/internal/ai/"
+      QUARKUS_OIDC_AUTH_SERVER_URL: "http://keycloak-app:8080/realms/onecx"
     ports:
       - "8081:8080"
     depends_on:

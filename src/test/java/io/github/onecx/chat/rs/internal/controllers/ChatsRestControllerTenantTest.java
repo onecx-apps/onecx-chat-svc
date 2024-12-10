@@ -5,11 +5,13 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.from;
+import static org.tkit.quarkus.security.test.SecurityTestUtils.getKeycloakClientToken;
 
 import jakarta.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.tkit.quarkus.security.test.GenerateKeycloakClient;
 import org.tkit.quarkus.test.WithDBData;
 
 import gen.io.github.onecx.chat.rs.internal.model.*;
@@ -20,6 +22,7 @@ import io.quarkus.test.junit.QuarkusTest;
 @QuarkusTest
 @TestHTTPEndpoint(ChatsRestController.class)
 @WithDBData(value = "data/testdata-internal.xml", deleteBeforeInsert = true, deleteAfterTest = true, rinseAndRepeat = true)
+@GenerateKeycloakClient(clientName = "testClient", scopes = { "ocx-chat:all", "ocx-chat:read", "ocx-chat:write" })
 class ChatsRestControllerTenantTest extends AbstractTest {
 
     @Test
@@ -33,6 +36,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         chatDto.setSummary("summary");
 
         var dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
@@ -44,6 +48,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .get(dto.getId())
@@ -51,6 +56,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .statusCode(NOT_FOUND.getStatusCode());
 
         dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .get(dto.getId())
@@ -67,6 +73,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // create chat without body
         var exception = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
@@ -83,7 +90,9 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
         chatDto.setAppId("appId");
 
-        given().when()
+        given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
+                .when()
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(chatDto)
@@ -98,6 +107,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // delete entity with wrong tenant
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .delete("t-chat-DELETE_1")
@@ -105,6 +115,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // delete entity with wrong tenant still exists
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .get("t-chat-DELETE_1")
@@ -112,6 +123,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // delete chat
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .delete("t-chat-DELETE_1")
@@ -119,6 +131,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // check if chat exists
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .get("t-chat-DELETE_1")
@@ -126,6 +139,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // delete chat in portal
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .delete("t-chat-11-111")
@@ -138,6 +152,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
     void getChatByIdTest() {
 
         var dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .get("t-chat-22-222")
@@ -151,11 +166,13 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(dto.getId()).isEqualTo("t-chat-22-222");
 
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .get("t-chat-22-222")
                 .then().statusCode(NOT_FOUND.getStatusCode());
 
         dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .get("t-chat-11-111")
@@ -173,6 +190,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
     @Test
     void getChatsNoTenantTest() {
         var data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .get()
                 .then()
@@ -182,14 +200,15 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .as(ChatPageResultDTO.class);
 
         assertThat(data).isNotNull();
-        assertThat(data.getTotalElements()).isEqualTo(3);
-        assertThat(data.getStream()).isNotNull().hasSize(3);
+        assertThat(data.getTotalElements()).isEqualTo(4);
+        assertThat(data.getStream()).isNotNull().hasSize(4);
 
     }
 
     @Test
     void getChatsTest() {
         var data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .get()
@@ -204,6 +223,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         assertThat(data.getStream()).isNotNull().hasSize(2);
 
         data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .get()
@@ -224,6 +244,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         var criteria = new ChatSearchCriteriaDTO();
 
         var data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(criteria)
@@ -240,6 +261,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         criteria.setType(null);
         data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(criteria)
@@ -256,6 +278,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         criteria.setType(ChatTypeDTO.HUMAN_CHAT);
         data = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(criteria)
@@ -281,6 +304,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         chatDto.setTopic("topic-update");
 
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .body(chatDto)
@@ -290,6 +314,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
 
         // update chat
         given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(chatDto)
@@ -298,7 +323,9 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .then().statusCode(NO_CONTENT.getStatusCode());
 
         // download chat
-        var dto = given().contentType(APPLICATION_JSON)
+        var dto = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
+                .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org1"))
                 .body(chatDto)
                 .when()
@@ -317,6 +344,7 @@ class ChatsRestControllerTenantTest extends AbstractTest {
     void updateChatWithoutBodyTest() {
 
         var exception = given()
+                .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
                 .header(APM_HEADER_PARAM, createToken("org2"))
                 .when()
@@ -332,5 +360,4 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         Assertions.assertNotNull(exception.getInvalidParams());
         Assertions.assertEquals(1, exception.getInvalidParams().size());
     }
-
 }

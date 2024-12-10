@@ -20,7 +20,7 @@ public class Message extends TraceableEntity {
     @Column(name = "TENANT_ID")
     private String tenantId;
 
-    @Column(name = "TEXT")
+    @Column(name = "TEXT", columnDefinition = "varchar(4000)")
     private String text;
 
     @Column(name = "TYPE")

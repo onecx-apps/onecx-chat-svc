@@ -11,6 +11,8 @@ tags:
 paths:
   /internal/chats/{chatId}/messages:
     get:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:read ]
       tags:
         - chatsInternal
       description: Return list of messages
@@ -32,6 +34,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/Message'
     post:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:write ]
       tags:
         - chatsInternal
       description: creates a Message
@@ -69,6 +73,8 @@ paths:
                 $ref: '#/components/schemas/ProblemDetailResponse'
   /internal/chats/{chatId}/participants:
     get:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:read ]
       tags:
         - chatsInternal
       description: Return list of participants
@@ -90,6 +96,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/Participant'
     post:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:write ]
       tags:
         - chatsInternal
       description: add a participant
@@ -127,6 +135,8 @@ paths:
                 $ref: '#/components/schemas/ProblemDetailResponse'                
   /internal/chats:
     get:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:read ]
       tags:
         - chatsInternal
       description: Return list of chats
@@ -156,6 +166,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/ChatPageResult'
     post:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:write ]
       tags:
         - chatsInternal
       description: Create chat
@@ -187,6 +199,8 @@ paths:
                 $ref: '#/components/schemas/ProblemDetailResponse'
   /internal/chats/{id}:
     get:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:read ]
       tags:
         - chatsInternal
       description: Return chat by ID
@@ -207,6 +221,8 @@ paths:
         "404":
           description: Not found
     put:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:write ]
       tags:
         - chatsInternal
       description: Update chat by ID
@@ -235,6 +251,8 @@ paths:
         "404":
           description: Chat not found
     delete:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:delete ]
       tags:
         - chatsInternal
       description: Delete chat by ID
@@ -250,6 +268,8 @@ paths:
           description: No Content
   /internal/chats/search:
     post:
+      security:
+        - oauth2: [ ocx-chat:all, ocx-chat:write ]
       tags:
         - chatsInternal
       description: Search for chats
@@ -270,6 +290,18 @@ paths:
                 items:
                   $ref: '#/components/schemas/ChatPageResult'
 components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://oauth.simple.api/token
+          scopes:
+            ocx-chat:all: Grants access to all operations
+            ocx-chat:read: Grants read access
+            ocx-chat:write: Grants write access
+            ocx-chat:delete: Grants access to delete operations
+
   schemas:
     ChatType:
       type: string

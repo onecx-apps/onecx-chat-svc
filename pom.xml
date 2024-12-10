@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.onecx</groupId>
+        <groupId>org.tkit.onecx</groupId>
         <artifactId>onecx-quarkus3-parent</artifactId>
-        <version>0.26.0</version>
+        <version>0.72.0</version>
     </parent>
 
     <artifactId>onecx-chat-svc</artifactId>
@@ -15,13 +15,22 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.onecx.quarkus</groupId>
+            <groupId>org.tkit.onecx.quarkus</groupId>
             <artifactId>onecx-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.onecx.quarkus</groupId>
+            <groupId>org.tkit.onecx.quarkus</groupId>
             <artifactId>onecx-tenant</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-oidc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-oidc-filter</artifactId>
+        </dependency>
+
         <!-- 1000kit -->
         <dependency>
             <groupId>org.tkit.quarkus.lib</groupId>
@@ -30,10 +39,6 @@
         <dependency>
             <groupId>org.tkit.quarkus.lib</groupId>
             <artifactId>tkit-quarkus-jpa-tenant</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.tkit.quarkus.lib</groupId>
-            <artifactId>tkit-quarkus-data-import</artifactId>
         </dependency>
         <dependency>
             <groupId>org.tkit.quarkus.lib</groupId>
@@ -83,11 +88,11 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-reactive</artifactId>
+            <artifactId>quarkus-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+            <artifactId>quarkus-rest-jackson</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -119,7 +124,6 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
-
         <dependency>
             <groupId>io.quarkiverse.mockserver</groupId>
             <artifactId>quarkus-mockserver</artifactId>
@@ -155,6 +159,11 @@
         <dependency>
             <groupId>org.tkit.quarkus.lib</groupId>
             <artifactId>tkit-quarkus-test-db-import</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.tkit.quarkus.lib</groupId>
+            <artifactId>tkit-quarkus-security-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -209,7 +218,7 @@
                 <artifactId>download-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>user-profile-svc-internal</id>
+                        <id>onecx-ai-svc</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>wget</goal>
