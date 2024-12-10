@@ -9,6 +9,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import jakarta.ws.rs.core.Response;
 
+import org.jboss.resteasy.reactive.ClientWebApplicationException;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -31,6 +32,11 @@ public interface ExceptionMapper {
     default RestResponse<ProblemDetailResponseDTO> exception(ConstraintException ex) {
         var dto = exception(ex.getMessageKey().name(), ex.getConstraints());
         dto.setParams(map(ex.namedParameters));
+        return RestResponse.status(Response.Status.BAD_REQUEST, dto);
+    }
+
+    default RestResponse<ProblemDetailResponseDTO> clientException(ClientWebApplicationException ex) {
+        ProblemDetailResponseDTO dto = exception("ERROR_CALLING_AI_CHAT_SERVICE", ex.getMessage());
         return RestResponse.status(Response.Status.BAD_REQUEST, dto);
     }
 

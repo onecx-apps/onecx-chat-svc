@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.resteasy.reactive.ClientWebApplicationException;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.tkit.quarkus.jpa.exceptions.ConstraintException;
@@ -155,9 +156,6 @@ public class ChatsRestController implements ChatsInternalApi {
                 var responseMessage = mapper.mapAiSvcMessage(chatResponse);
                 responseMessage.setChat(chat);
                 msgDao.create(responseMessage);
-            } catch (Exception e) {
-                throw new ConstraintException(e.getMessage(), ChatErrorKeys.ERROR_CALLING_AI_CHAT_SERVICE,
-                        null);
             }
         }
 
@@ -171,7 +169,7 @@ public class ChatsRestController implements ChatsInternalApi {
     public Response getChatMessages(String chatId) {
         var chat = dao.findById(chatId);
 
-        if (chat == null || chat.getMessages() == null) {
+        if (chat == null || chat.getMessages().isEmpty()) {
             // Handle the case where chat or its messages are null
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -206,7 +204,7 @@ public class ChatsRestController implements ChatsInternalApi {
 
         var chat = dao.findById(chatId);
 
-        if (chat == null || chat.getParticipants() == null) {
+        if (chat == null || chat.getParticipants().isEmpty()) {
             // Handle the case where chat or its messages are null
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -227,9 +225,13 @@ public class ChatsRestController implements ChatsInternalApi {
         return exceptionMapper.constraint(ex);
     }
 
+    @ServerExceptionMapper
+    public RestResponse<ProblemDetailResponseDTO> restException(ClientWebApplicationException ex) {
+        return exceptionMapper.clientException(ex);
+    }
+
     enum ChatErrorKeys {
-        CHAT_DOES_NOT_EXIST,
-        ERROR_CALLING_AI_CHAT_SERVICE
+        CHAT_DOES_NOT_EXIST
     }
 
 }

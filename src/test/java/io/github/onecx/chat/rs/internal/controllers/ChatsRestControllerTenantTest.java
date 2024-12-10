@@ -200,8 +200,8 @@ class ChatsRestControllerTenantTest extends AbstractTest {
                 .as(ChatPageResultDTO.class);
 
         assertThat(data).isNotNull();
-        assertThat(data.getTotalElements()).isEqualTo(3);
-        assertThat(data.getStream()).isNotNull().hasSize(3);
+        assertThat(data.getTotalElements()).isEqualTo(4);
+        assertThat(data.getStream()).isNotNull().hasSize(4);
 
     }
 
@@ -360,5 +360,4 @@ class ChatsRestControllerTenantTest extends AbstractTest {
         Assertions.assertNotNull(exception.getInvalidParams());
         Assertions.assertEquals(1, exception.getInvalidParams().size());
     }
-
 }
