@@ -1,10 +1,10 @@
-apiVersion: v1
+apiVersion: v2
 name: onecx-chat-svc
 version: 0.0.0
 appVersion: 0.0.0
 description: Onecx chat service
 keywords:
-  - tenant
+  - chat
 sources:
   - https://github.com/onecx-apps/onecx-chat-svc
 maintainers:

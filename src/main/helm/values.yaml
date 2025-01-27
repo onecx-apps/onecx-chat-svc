@@ -1,4 +1,5 @@
 app:
+  name: svc
   image:
     repository: "onecx-apps/onecx-chat-svc"
     tag: 999-SNAPSHOT
