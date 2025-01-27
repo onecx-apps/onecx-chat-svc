@@ -225,7 +225,7 @@
                         </goals>
                         <configuration>
                             <uri>
-                                https://raw.githubusercontent.com/onecx-apps/onecx-ai-svc/main/resources/chat-openapi.yaml
+                                https://raw.githubusercontent.com/onecx-apps/onecx-ai-management-svc/main/resources/chat-openapi.yaml
                             </uri>
                             <outputDirectory>target/tmp/openapi</outputDirectory>
                             <outputFileName>onecx-ai-svc-openapi.yaml</outputFileName>
