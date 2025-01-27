@@ -525,7 +525,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 "}";
 
         mockServerClient.when(request()
-                .withPath("/ai/chat")
+                .withPath("/internal/ai/chat")
                 .withMethod(HttpMethod.POST))
                 .withId(MOCK_ID)
                 .respond(httpRequest -> response().withStatusCode(200)
