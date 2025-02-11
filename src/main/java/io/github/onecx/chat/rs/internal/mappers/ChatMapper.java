@@ -94,6 +94,7 @@ public interface ChatMapper {
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "chat", ignore = true)
+    @Mapping(target = "id", ignore = true)
     Participant mapParticipant(ParticipantDTO participantDTO);
 
     @Mapping(target = "id", ignore = true)

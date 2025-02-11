@@ -339,7 +339,6 @@ class ChatsRestControllerTest extends AbstractTest {
         participantDto.setUserId("jdoe");
         participantDto.setUserName("John Doe");
         participantDto.setType(ParticipantTypeDTO.HUMAN);
-        participantDto.setId("11");
         chatDto.addParticipantsItem(participantDto);
 
         //create human chat
