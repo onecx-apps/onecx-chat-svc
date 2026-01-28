@@ -312,13 +312,13 @@ components:
       type: string
       enum:
         - HUMAN
-        - ASSISTANT        
+        - ASSISTANT
         - SYSTEM
     ParticipantType:
       type: string
       enum:
         - HUMAN
-        - ASSISTANT        
+        - ASSISTANT
     ChatSearchCriteria:
       type: object
       properties:
@@ -327,9 +327,9 @@ components:
         topic:
           type: string
         participant:
-          type: string       
+          type: string
         appId:
-          type: string                                        
+          type: string
         pageNumber:
           format: int32
           description: The number of page.
@@ -379,7 +379,7 @@ components:
         stream:
           type: array
           items:
-            $ref: '#/components/schemas/Message'            
+            $ref: '#/components/schemas/Message'
     Chat:
       required:
         - type
@@ -409,7 +409,7 @@ components:
         participants:
           type: array
           items:
-            $ref: '#/components/schemas/Participant'          
+            $ref: '#/components/schemas/Participant'
     Message:
       required:
         - type
@@ -435,7 +435,8 @@ components:
         userName:
           type: string
         reliability:
-          type: float
+          type: number
+          format: float
     Participant:
       required:
         - type
@@ -515,13 +516,34 @@ components:
         id:
           type: string
         text:
-          type: string          
+          type: string
         type:
           $ref: '#/components/schemas/MessageType'
         userName:
           type: string
+        requestContext:
+          $ref: '#/components/schemas/RequestContext'
         reliability:
-          type: float
+          type: number
+          format: float
+    RequestContext:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/ConfigurationFilter'
+        aiContext:
+          type: object
+          additionalProperties:
+            type: string
+    ConfigurationFilter:
+      type: object
+      properties:
+        key:
+          type: string
+          enum:
+            - APP_ID
+        value:
+          type: string
     AddParticipant:
       required:
         - type
@@ -579,7 +601,7 @@ components:
         participants:
           type: array
           items:
-            $ref: '#/components/schemas/Participant'          
+            $ref: '#/components/schemas/Participant'
     UpdateChat:
       required:
         - name
