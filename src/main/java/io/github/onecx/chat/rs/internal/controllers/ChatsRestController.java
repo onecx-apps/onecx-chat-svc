@@ -21,7 +21,7 @@ import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.tkit.quarkus.jpa.exceptions.ConstraintException;
 
-import gen.io.github.onecx.ai.clients.api.AiInternalApi;
+import gen.io.github.onecx.ai.clients.api.DispatchApi;
 import gen.io.github.onecx.ai.clients.model.ChatMessage;
 import gen.io.github.onecx.ai.clients.model.ChatRequest;
 import gen.io.github.onecx.ai.clients.model.Conversation;
@@ -44,7 +44,7 @@ public class ChatsRestController implements ChatsInternalApi {
 
     @Inject
     @RestClient
-    AiInternalApi aiChatClient;
+    DispatchApi dispatchClient;
 
     @Inject
     ChatDAO dao;
@@ -151,7 +151,7 @@ public class ChatsRestController implements ChatsInternalApi {
             chatRequest.chatMessage(chatMessage);
             chatRequest.conversation(conversation);
 
-            try (Response response = aiChatClient.chat(chatRequest)) {
+            try (Response response = dispatchClient.chat(chatRequest)) {
                 var chatResponse = response.readEntity(ChatMessage.class);
                 var responseMessage = mapper.mapAiSvcMessage(chatResponse);
                 responseMessage.setChat(chat);

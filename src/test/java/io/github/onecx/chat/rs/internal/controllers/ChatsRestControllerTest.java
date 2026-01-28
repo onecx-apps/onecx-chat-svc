@@ -6,7 +6,6 @@ import static jakarta.ws.rs.core.Response.Status.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.tkit.quarkus.security.test.SecurityTestUtils.getKeycloakClientToken;
 
 import java.util.List;
 
@@ -524,7 +523,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 "}";
 
         mockServerClient.when(request()
-                .withPath("/internal/ai/chat")
+                .withPath("/v1/dispatch/chat")
                 .withMethod(HttpMethod.POST))
                 .withId(MOCK_ID)
                 .respond(httpRequest -> response().withStatusCode(200)

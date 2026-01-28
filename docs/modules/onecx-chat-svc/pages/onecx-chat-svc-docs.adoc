@@ -1,10 +1,12 @@
 
 include::onecx-chat-svc-attributes.adoc[opts=optional]
 
-=== Default properties
+{docker-registry}[Link to Docker registry]
+
+== Default properties
 
 .{properties-file}
-[%collapsible%open]
+[%collapsible]
 ====
 [source,properties,subs=attributes+]
 ----
@@ -25,6 +27,8 @@ quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.config-key=onec
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.base-package=gen.io.github.onecx.ai.clients
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.return-response=true
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.additional-api-type-annotations=@org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
+quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.additional-model-type-annotations=@io.quarkus.runtime.annotations.RegisterForReflection;
+quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.enable-security-generation=false
 %prod.quarkus.datasource.jdbc.url=${DB_URL:jdbc:postgresql://postgresdb:5432/onecx-chat?sslmode=disable}
 %prod.quarkus.datasource.username=${DB_USER:onecx-chat}
 %prod.quarkus.datasource.password=${DB_PWD:onecx-chat}
@@ -32,22 +36,18 @@ quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.additional-api-
 ----
 ====
 
-=== Extensions
-
+== Extensions
+.Extensions List
+[%collapsible]
+====
 include::onecx-chat-svc-extensions.adoc[opts=optional]
+====
 
-=== Container
+== Helm
 
-{docker-registry}[Docker registry]
+{helm-registry}[Link to Helm registry]
 
-
-=== Helm
-
-{helm-registry}[Helm registry]
-
-Default values
-
-.{helm-file}
+.Default values in {helm-file}
 [source,yaml]
 ----
 app:
@@ -63,6 +63,5 @@ app:
         enabled: true
         spec:
           kcConfig:
-            defaultClientScopes: [ ocx-tn:read ]
+            defaultClientScopes: [ ocx-tn:read, ocx-ai:read ]
 ----
-
