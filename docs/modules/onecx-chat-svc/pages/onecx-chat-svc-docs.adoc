@@ -22,6 +22,7 @@ quarkus.hibernate-orm.multitenant=DISCRIMINATOR
 quarkus.liquibase.migrate-at-start=true
 quarkus.liquibase.validate-on-migrate=true
 tkit.rs.context.tenant-id.enabled=false
+org.eclipse.microprofile.rest.client.propagateHeaders=apm-principal-token
 quarkus.openapi-generator.codegen.input-base-dir=target/tmp/openapi
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.config-key=onecx_ai_svc
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.base-package=gen.io.github.onecx.ai.clients
@@ -29,6 +30,8 @@ quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.return-response
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.additional-api-type-annotations=@org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.additional-model-type-annotations=@io.quarkus.runtime.annotations.RegisterForReflection;
 quarkus.openapi-generator.codegen.spec.onecx_ai_svc_openapi_yaml.enable-security-generation=false
+%prod.quarkus.oidc-client.client-id=${quarkus.application.name}
+%prod.quarkus.rest-client.onecx_ai_svc.providers=io.quarkus.oidc.client.reactive.filter.OidcClientRequestReactiveFilter
 %prod.quarkus.datasource.jdbc.url=${DB_URL:jdbc:postgresql://postgresdb:5432/onecx-chat?sslmode=disable}
 %prod.quarkus.datasource.username=${DB_USER:onecx-chat}
 %prod.quarkus.datasource.password=${DB_PWD:onecx-chat}
