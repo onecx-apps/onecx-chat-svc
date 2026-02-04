@@ -372,7 +372,7 @@ class ChatsRestControllerTest extends AbstractTest {
         var messageDto = new CreateMessageDTO();
         messageDto.setType(MessageTypeDTO.HUMAN);
         messageDto.setText("This is a human question");
-        messageDto.setUserName("human");
+        messageDto.setUserId("humanId");
 
         var messageId = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
@@ -552,7 +552,7 @@ class ChatsRestControllerTest extends AbstractTest {
         var messageDto = new CreateMessageDTO();
         messageDto.setType(MessageTypeDTO.HUMAN);
         messageDto.setText("This is a human question");
-        messageDto.setUserName("human");
+        messageDto.setUserId("humanId");
 
         var messageId = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
@@ -637,8 +637,7 @@ class ChatsRestControllerTest extends AbstractTest {
                         + //
                         "\r\n" + //
                         "Donec imperdiet, nunc vel sodales rhoncus, odio lacus ultricies dolor, a bibendum nisi urna vel orci. Sed auctor felis vel dolor feugiat, in volutpat metus dapibus. Suspendisse et arcu ut metus fermentum congue a a mi. Integer pellentesque, ligula in tincidunt commodo, dui quam vulputate nisl, vitae luctus felis eros vel elit. Ut auctor urna ut lectus efficitur interdum. In hac habitasse platea dictumst. Maecenas eu massa quis odio blandit cursus vel at neque. Sed ut pharetra turpis. Duis auctor elit ac aliquet venenatis. Proin ut nisi vel ex laoreet vestibulum id eu libero. Vivamus eleifend, quam sit amet consectetur dignissim, enim velit blandit orci, at feugiat nunc justo vel justo. Proin vel dui a ex vulputate vestibulum.");
-        messageDto.setUserName("GenAis");
-        messageDto.setReliability(0.9f);
+        messageDto.setUserId("GenAis");
 
         //create message
         var messageId = given()
@@ -668,8 +667,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         assertThat(response).isNotNull();
         assertThat(response).isNotNull().isNotEmpty().hasSize(1);
-        assertThat(response.get(0).getUserName()).isEqualTo("GenAis");
-        assertThat(response.get(0).getReliability()).isEqualTo(0.9f);
+        assertThat(response.get(0).getUserId()).isEqualTo("GenAis");
 
     }
 
@@ -700,7 +698,7 @@ class ChatsRestControllerTest extends AbstractTest {
     void createChatMessageExceptionFromAIServiceTest() {
         CreateMessageDTO createMessageDTO = new CreateMessageDTO();
         createMessageDTO.setType(MessageTypeDTO.ASSISTANT);
-        createMessageDTO.setUserName("user");
+        createMessageDTO.setUserId("userId");
         createMessageDTO.setText("custom text");
 
         mockServerClient.when(request()

@@ -2,6 +2,8 @@ package io.github.onecx.chat.domain.models;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+import java.util.Set;
+
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.TenantId;
@@ -33,9 +35,8 @@ public class Participant extends TraceableEntity {
     @Column(name = "USER_NAME")
     private String userName;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "CHAT_ID")
-    private Chat chat;
+    @ManyToMany(mappedBy = "participants", fetch = LAZY)
+    private Set<Chat> chats;
 
     public enum ParticipantType {
         HUMAN,

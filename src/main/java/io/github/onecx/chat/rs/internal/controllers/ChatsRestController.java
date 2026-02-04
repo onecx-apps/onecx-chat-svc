@@ -2,8 +2,7 @@ package io.github.onecx.chat.rs.internal.controllers;
 
 import static jakarta.transaction.Transactional.TxType.NOT_SUPPORTED;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,6 +29,7 @@ import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.daos.ChatDAO;
 import io.github.onecx.chat.domain.daos.MessageDAO;
 import io.github.onecx.chat.domain.daos.ParticipantDAO;
+import io.github.onecx.chat.domain.models.Chat;
 import io.github.onecx.chat.domain.models.Chat.ChatType;
 import io.github.onecx.chat.domain.models.Message;
 import io.github.onecx.chat.domain.models.Participant;
@@ -73,7 +73,13 @@ public class ChatsRestController implements ChatsInternalApi {
         if (createChatDTO.getParticipants() != null && !createChatDTO.getParticipants().isEmpty()) {
             var participants = mapper.mapParticipantDTOs(createChatDTO.getParticipants());
             for (Participant participant : participants) {
-                participant.setChat(chat);
+                if (participant.getChats() == null || participant.getChats().isEmpty()) {
+                    participant.setChats(Set.of(chat));
+                } else {
+                    Set<Chat> chats = new HashSet<>(participant.getChats());
+                    chats.add(chat);
+                    participant.setChats(chats);
+                }
                 participant = participantDao.create(participant);
             }
 
@@ -190,7 +196,7 @@ public class ChatsRestController implements ChatsInternalApi {
         }
 
         var participant = mapper.addParticipant(addParticipantDTO);
-        participant.setChat(chat);
+        participant.setChats(Set.of(chat));
         participant = participantDao.create(participant);
 
         return Response
