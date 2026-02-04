@@ -22,23 +22,36 @@
                     schemaName="public">
         </dropColumn>
 
+
         <createTable tableName="chat_participant">
-            <column name="optlock" type="INTEGER">
+            <column name="chat_guid" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="creationdate" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="modificationdate" type="TIMESTAMP WITHOUT TIME ZONE"/>
-            <column name="guid" type="VARCHAR(255)">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="message_pkey"/>
-            </column>
-            <column name="tenant_id" type="VARCHAR(255)">
+            <column name="participant_guid" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="chat_id" type="VARCHAR(255)"/>
-            <column name="user_id" type="VARCHAR(255)"/>
-            <column name="creationuser" type="VARCHAR(255)"/>
-            <column name="modificationuser" type="VARCHAR(255)"/>
         </createTable>
+
+        <addPrimaryKey
+                tableName="chat_participant"
+                columnNames="chat_guid, participant_guid"
+                constraintName="pk_chat_participant"/>
+
+        <addForeignKeyConstraint
+                baseTableName="chat_participant"
+                baseColumnNames="chat_guid"
+                referencedTableName="chat"
+                referencedColumnNames="guid"
+                constraintName="fk_chat_participant_chat"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="chat_participant"
+                baseColumnNames="participant_guid"
+                referencedTableName="participant"
+                referencedColumnNames="guid"
+                constraintName="fk_chat_participant_participant"
+                onDelete="CASCADE"/>
 
     </changeSet>
 </databaseChangeLog>

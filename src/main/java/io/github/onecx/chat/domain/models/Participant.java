@@ -35,8 +35,7 @@ public class Participant extends TraceableEntity {
     @Column(name = "USER_NAME")
     private String userName;
 
-    @ManyToMany(fetch = LAZY)
-    @JoinTable(name = "CHAT_PARTICIPANT", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "CHAT_ID"))
+    @ManyToMany(mappedBy = "participants", fetch = LAZY)
     private Set<Chat> chats;
 
     public enum ParticipantType {

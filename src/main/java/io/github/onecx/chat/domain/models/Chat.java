@@ -49,7 +49,7 @@ public class Chat extends TraceableEntity {
     private Set<Message> messages = new HashSet<>();
 
     @ManyToMany(cascade = { PERSIST, MERGE }, fetch = LAZY)
-    @JoinTable(name = "CHAT_PARTICIPANT", joinColumns = @JoinColumn(name = "CHAT_ID"), inverseJoinColumns = @JoinColumn(name = "PARTICIPANT_ID"))
+    @JoinTable(name = "CHAT_PARTICIPANT", joinColumns = @JoinColumn(name = "CHAT_GUID"), inverseJoinColumns = @JoinColumn(name = "PARTICIPANT_GUID", referencedColumnName = "guid"))
     @OrderBy("creationDate ASC")
     private Set<Participant> participants = new HashSet<>();
 

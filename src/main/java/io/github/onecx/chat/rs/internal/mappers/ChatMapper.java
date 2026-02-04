@@ -129,7 +129,6 @@ public interface ChatMapper {
 
     @Mapping(source = "id", target = "conversationId")
     @Mapping(source = "text", target = "message")
-    @Mapping(target = "reliability", ignore = true)
     ChatMessage mapMessage(Message object);
 
     @ValueMapping(source = "HUMAN", target = "USER")
