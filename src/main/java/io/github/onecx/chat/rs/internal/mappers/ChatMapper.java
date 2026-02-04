@@ -42,6 +42,7 @@ public interface ChatMapper {
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "messages", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     //@Mapping(target = "participants", source = "participants")
     @Mapping(target = "participants", ignore = true)
     Chat create(CreateChatDTO object);
@@ -56,6 +57,7 @@ public interface ChatMapper {
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "chat", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     Message createMessage(CreateMessageDTO dto);
 
     @Mapping(target = "id", ignore = true)
@@ -63,7 +65,7 @@ public interface ChatMapper {
     @Mapping(target = "modificationCount", ignore = true)
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
-    @Mapping(target = "chat", ignore = true)
+    @Mapping(target = "chats", ignore = true)
     Participant addParticipant(AddParticipantDTO dto);
 
     @IterableMapping(qualifiedByName = "mapSingleChat")
@@ -93,7 +95,7 @@ public interface ChatMapper {
     @Mapping(target = "modificationCount", ignore = true)
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
-    @Mapping(target = "chat", ignore = true)
+    @Mapping(target = "chats", ignore = true)
     @Mapping(target = "id", ignore = true)
     Participant mapParticipant(ParticipantDTO participantDTO);
 
@@ -108,6 +110,7 @@ public interface ChatMapper {
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "messages", ignore = true)
     @Mapping(target = "participants", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     void update(UpdateChatDTO chatDTO, @MappingTarget Chat entity);
 
     @Mapping(target = "id", ignore = true)
@@ -116,6 +119,7 @@ public interface ChatMapper {
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "messages", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     Chat map(UpdateChatDTO object);
 
     @Mapping(source = "id", target = "conversationId")
@@ -125,6 +129,7 @@ public interface ChatMapper {
 
     @Mapping(source = "id", target = "conversationId")
     @Mapping(source = "text", target = "message")
+    @Mapping(target = "reliability", ignore = true)
     ChatMessage mapMessage(Message object);
 
     @ValueMapping(source = "HUMAN", target = "USER")
@@ -150,7 +155,7 @@ public interface ChatMapper {
     @Mapping(target = "chat", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "text", source = "message")
-    @Mapping(target = "userName", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     Message mapAiSvcMessage(ChatMessage chatResponse);
 
 }

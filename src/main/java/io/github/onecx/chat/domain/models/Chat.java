@@ -1,6 +1,6 @@
 package io.github.onecx.chat.domain.models;
 
-import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.CascadeType.*;
 import static jakarta.persistence.FetchType.LAZY;
 
 import java.util.HashSet;
@@ -48,10 +48,13 @@ public class Chat extends TraceableEntity {
     @OrderBy("creationDate ASC")
     private Set<Message> messages = new HashSet<>();
 
-    @OneToMany(cascade = ALL, fetch = LAZY, mappedBy = "chat", orphanRemoval = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToMany(cascade = { PERSIST, MERGE }, fetch = LAZY)
+    @JoinTable(name = "CHAT_PARTICIPANT", joinColumns = @JoinColumn(name = "CHAT_ID"), inverseJoinColumns = @JoinColumn(name = "PARTICIPANT_ID"))
     @OrderBy("creationDate ASC")
     private Set<Participant> participants = new HashSet<>();
+
+    @Column(name = "USER_ID")
+    private String userId;
 
     public enum ChatType {
         HUMAN_CHAT,
