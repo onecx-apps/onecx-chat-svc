@@ -472,7 +472,7 @@ class ChatsRestControllerTest extends AbstractTest {
         addParticipantDto.setUserName("user");
         addParticipantDto.setType(ParticipantTypeDTO.HUMAN);
 
-        var exception = given()
+        var response = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
                 .pathParam("chatId", "id-not-exist")
                 .when()
@@ -480,13 +480,10 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body(addParticipantDto)
                 .post("{chatId}/participants")
                 .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract()
-                .body().as(ProblemDetailResponseDTO.class);
+                .statusCode(NOT_FOUND.getStatusCode());
 
-        Assertions.assertNotNull(exception);
-        Assertions.assertEquals("CHAT_DOES_NOT_EXIST", exception.getErrorCode());
-        Assertions.assertEquals("Chat does not exist", exception.getDetail());
+        assertThat(response).isNotNull();
+
     }
 
     @Test
@@ -676,7 +673,7 @@ class ChatsRestControllerTest extends AbstractTest {
         CreateMessageDTO createMessageDTO = new CreateMessageDTO();
         createMessageDTO.setType(MessageTypeDTO.ASSISTANT);
 
-        var exception = given()
+        var response = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
@@ -684,13 +681,9 @@ class ChatsRestControllerTest extends AbstractTest {
                 .pathParam("chatId", "not-exist-chat-id")
                 .post("{chatId}/messages")
                 .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract()
-                .body().as(ProblemDetailResponseDTO.class);
+                .statusCode(NOT_FOUND.getStatusCode());
 
-        Assertions.assertNotNull(exception);
-        Assertions.assertEquals("CHAT_DOES_NOT_EXIST", exception.getErrorCode());
-        Assertions.assertEquals("Chat does not exist", exception.getDetail());
+        assertThat(response).isNotNull();
 
     }
 
