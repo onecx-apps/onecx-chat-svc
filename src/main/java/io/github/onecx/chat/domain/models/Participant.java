@@ -2,6 +2,7 @@ package io.github.onecx.chat.domain.models;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -36,7 +37,7 @@ public class Participant extends TraceableEntity {
     private String userName;
 
     @ManyToMany(mappedBy = "participants", fetch = LAZY)
-    private Set<Chat> chats;
+    private Set<Chat> chats = new HashSet<>();
 
     public enum ParticipantType {
         HUMAN,

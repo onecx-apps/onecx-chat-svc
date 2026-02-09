@@ -29,7 +29,6 @@ import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.daos.ChatDAO;
 import io.github.onecx.chat.domain.daos.MessageDAO;
 import io.github.onecx.chat.domain.daos.ParticipantDAO;
-import io.github.onecx.chat.domain.models.Chat;
 import io.github.onecx.chat.domain.models.Chat.ChatType;
 import io.github.onecx.chat.domain.models.Message;
 import io.github.onecx.chat.domain.models.Participant;
@@ -73,17 +72,14 @@ public class ChatsRestController implements ChatsInternalApi {
         if (createChatDTO.getParticipants() != null && !createChatDTO.getParticipants().isEmpty()) {
             var participants = mapper.mapParticipantDTOs(createChatDTO.getParticipants());
             for (Participant participant : participants) {
-                if (participant.getChats() == null || participant.getChats().isEmpty()) {
-                    participant.setChats(Set.of(chat));
-                } else {
-                    Set<Chat> chats = new HashSet<>(participant.getChats());
-                    chats.add(chat);
-                    participant.setChats(chats);
-                }
                 participant = participantDao.create(participant);
+                chat.getParticipants().add(participant);
+                participant.getChats().add(chat);
+                participantDao.update(participant);
             }
 
         }
+        chat = dao.update(chat);
 
         return Response
                 .created(uriInfo.getAbsolutePathBuilder().path(chat.getId()).build())
@@ -187,6 +183,7 @@ public class ChatsRestController implements ChatsInternalApi {
     }
 
     @Override
+    @Transactional
     public Response addParticipant(String chatId, @Valid @NotNull AddParticipantDTO addParticipantDTO) {
 
         var chat = dao.findById(chatId);
@@ -196,8 +193,12 @@ public class ChatsRestController implements ChatsInternalApi {
         }
 
         var participant = mapper.addParticipant(addParticipantDTO);
-        participant.setChats(Set.of(chat));
+
+        participant.getChats().add(chat);
+        chat.getParticipants().add(participant);
+
         participant = participantDao.create(participant);
+        dao.update(chat);
 
         return Response
                 .created(uriInfo.getAbsolutePathBuilder().path(participant.getId()).build())

@@ -43,7 +43,6 @@ public interface ChatMapper {
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "messages", ignore = true)
     @Mapping(target = "userId", ignore = true)
-    //@Mapping(target = "participants", source = "participants")
     @Mapping(target = "participants", ignore = true)
     Chat create(CreateChatDTO object);
 
@@ -57,7 +56,7 @@ public interface ChatMapper {
     @Mapping(target = "persisted", ignore = true)
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "chat", ignore = true)
-    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "userId", source = "userId")
     Message createMessage(CreateMessageDTO dto);
 
     @Mapping(target = "id", ignore = true)
