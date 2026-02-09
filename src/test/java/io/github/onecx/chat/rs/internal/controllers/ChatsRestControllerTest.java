@@ -115,7 +115,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_CHAT);
+        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         assertThat(dto.getId()).isEqualTo("chat-11-111");
         assertThat(dto.getParticipants()).isNotNull();
         assertThat(dto.getParticipants()).isNotNull().hasSize(1);
@@ -175,7 +175,7 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(4);
         assertThat(data.getStream()).isNotNull().hasSize(4);
 
-        criteria.setType(ChatTypeDTO.HUMAN_CHAT);
+        criteria.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         data = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
@@ -331,7 +331,7 @@ class ChatsRestControllerTest extends AbstractTest {
     void createHumanChatTest() {
         var chatDto = new CreateChatDTO();
         chatDto.setAppId("appId");
-        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
+        chatDto.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
 
         ParticipantDTO participantDto = new ParticipantDTO();
         participantDto.setEmail("example@email.com");
@@ -605,7 +605,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // create chat
         var chatDto = new CreateChatDTO();
-        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
+        chatDto.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         chatDto.setAppId("appId");
         chatDto.setTopic("topic");
         chatDto.setSummary("summary");
@@ -729,7 +729,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // update none existing chat
         var chatDto = new UpdateChatDTO();
-        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
+        chatDto.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         chatDto.setTopic("topic-update");
 
         given()

@@ -57,7 +57,8 @@ public class Chat extends TraceableEntity {
     private String userId;
 
     public enum ChatType {
-        HUMAN_CHAT,
+        HUMAN_DIRECT_CHAT,
+        HUMAN_GROUP_CHAT,
         AI_CHAT
     }
 

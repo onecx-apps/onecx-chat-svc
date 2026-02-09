@@ -306,7 +306,8 @@ components:
     ChatType:
       type: string
       enum:
-        - HUMAN_CHAT
+        - HUMAN_DIRECT_CHAT
+        - HUMAN_GROUP_CHAT
         - AI_CHAT
     MessageType:
       type: string
