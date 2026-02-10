@@ -27,11 +27,8 @@ public class Message extends TraceableEntity {
     @Enumerated(EnumType.STRING)
     private MessageType type;
 
-    @Column(name = "USER_NAME")
-    private String userName;
-
-    @Column(name = "RELIABILITY")
-    private Float reliability;
+    @Column(name = "USER_ID")
+    private String userId;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "CHAT_ID")

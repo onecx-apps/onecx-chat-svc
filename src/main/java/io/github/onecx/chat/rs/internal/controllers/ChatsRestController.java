@@ -2,8 +2,7 @@ package io.github.onecx.chat.rs.internal.controllers;
 
 import static jakarta.transaction.Transactional.TxType.NOT_SUPPORTED;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,26 +14,20 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import org.tkit.quarkus.jpa.exceptions.ConstraintException;
 
-import gen.io.github.onecx.ai.clients.api.DispatchApi;
-import gen.io.github.onecx.ai.clients.model.ChatMessage;
-import gen.io.github.onecx.ai.clients.model.ChatRequest;
-import gen.io.github.onecx.ai.clients.model.Conversation;
 import gen.io.github.onecx.chat.rs.internal.ChatsInternalApi;
 import gen.io.github.onecx.chat.rs.internal.model.*;
 import io.github.onecx.chat.domain.daos.ChatDAO;
-import io.github.onecx.chat.domain.daos.MessageDAO;
-import io.github.onecx.chat.domain.daos.ParticipantDAO;
-import io.github.onecx.chat.domain.models.Chat.ChatType;
+import io.github.onecx.chat.domain.models.Chat;
 import io.github.onecx.chat.domain.models.Message;
 import io.github.onecx.chat.domain.models.Participant;
 import io.github.onecx.chat.rs.internal.mappers.ChatMapper;
 import io.github.onecx.chat.rs.internal.mappers.ExceptionMapper;
+import io.github.onecx.chat.rs.internal.services.ChatsService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -43,17 +36,10 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatsRestController implements ChatsInternalApi {
 
     @Inject
-    @RestClient
-    DispatchApi dispatchClient;
+    ChatsService service;
 
     @Inject
     ChatDAO dao;
-
-    @Inject
-    ParticipantDAO participantDao;
-
-    @Inject
-    MessageDAO msgDao;
 
     @Inject
     ChatMapper mapper;
@@ -65,19 +51,9 @@ public class ChatsRestController implements ChatsInternalApi {
     UriInfo uriInfo;
 
     @Override
-    @Transactional
     public Response createChat(CreateChatDTO createChatDTO) {
-        var chat = mapper.create(createChatDTO);
-        chat = dao.create(chat);
 
-        if (createChatDTO.getParticipants() != null && !createChatDTO.getParticipants().isEmpty()) {
-            var participants = mapper.mapParticipantDTOs(createChatDTO.getParticipants());
-            for (Participant participant : participants) {
-                participant.setChat(chat);
-                participant = participantDao.create(participant);
-            }
-
-        }
+        Chat chat = service.createChat(createChatDTO);
 
         return Response
                 .created(uriInfo.getAbsolutePathBuilder().path(chat.getId()).build())
@@ -86,9 +62,8 @@ public class ChatsRestController implements ChatsInternalApi {
     }
 
     @Override
-    @Transactional
     public Response deleteChat(String id) {
-        dao.deleteQueryById(id);
+        service.deleteChat(id);
         return Response.noContent().build();
     }
 
@@ -115,49 +90,26 @@ public class ChatsRestController implements ChatsInternalApi {
     }
 
     @Override
-    @Transactional
     public Response updateChat(String id, UpdateChatDTO updateChatDTO) {
-
         var chat = dao.findById(id);
         if (chat == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
-        mapper.update(updateChatDTO, chat);
-        dao.update(chat);
+        service.updateChat(chat, updateChatDTO);
         return Response.noContent().build();
     }
 
     @Override
-    @Transactional
     public Response createChatMessage(String chatId, CreateMessageDTO createMessageDTO) {
 
         var chat = dao.findById(chatId);
 
         if (chat == null) {
-            throw new ConstraintException("Chat does not exist", ChatErrorKeys.CHAT_DOES_NOT_EXIST, null);
+            // Handle the case where chat or its messages are null
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        var message = mapper.createMessage(createMessageDTO);
-        message.setChat(chat);
-        message = msgDao.create(message);
-
-        if (ChatType.AI_CHAT.equals(chat.getType())) {
-
-            Conversation conversation = mapper.mapChat2Conversation(chat);
-            ChatMessage chatMessage = mapper.mapMessage(message);
-
-            ChatRequest chatRequest = new ChatRequest();
-            chatRequest.chatMessage(chatMessage);
-            chatRequest.conversation(conversation);
-
-            try (Response response = dispatchClient.chat(chatRequest)) {
-                var chatResponse = response.readEntity(ChatMessage.class);
-                var responseMessage = mapper.mapAiSvcMessage(chatResponse);
-                responseMessage.setChat(chat);
-                msgDao.create(responseMessage);
-            }
-        }
+        Message message = service.createChatMessage(chat, createMessageDTO);
 
         return Response
                 .created(uriInfo.getAbsolutePathBuilder().path(message.getId()).build())
@@ -186,12 +138,11 @@ public class ChatsRestController implements ChatsInternalApi {
         var chat = dao.findById(chatId);
 
         if (chat == null) {
-            throw new ConstraintException("Chat does not exist", ChatErrorKeys.CHAT_DOES_NOT_EXIST, null);
+            // Handle the case where chat or its messages are null
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        var participant = mapper.addParticipant(addParticipantDTO);
-        participant.setChat(chat);
-        participant = participantDao.create(participant);
+        Participant participant = service.addParticipant(chat, addParticipantDTO);
 
         return Response
                 .created(uriInfo.getAbsolutePathBuilder().path(participant.getId()).build())
@@ -229,9 +180,4 @@ public class ChatsRestController implements ChatsInternalApi {
     public RestResponse<ProblemDetailResponseDTO> restException(ClientWebApplicationException ex) {
         return exceptionMapper.clientException(ex);
     }
-
-    enum ChatErrorKeys {
-        CHAT_DOES_NOT_EXIST
-    }
-
 }

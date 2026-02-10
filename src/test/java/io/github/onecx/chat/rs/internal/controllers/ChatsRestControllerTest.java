@@ -115,7 +115,7 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body().as(ChatDTO.class);
 
         assertThat(dto).isNotNull();
-        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_CHAT);
+        assertThat(dto.getType()).isEqualTo(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         assertThat(dto.getId()).isEqualTo("chat-11-111");
         assertThat(dto.getParticipants()).isNotNull();
         assertThat(dto.getParticipants()).isNotNull().hasSize(1);
@@ -175,7 +175,7 @@ class ChatsRestControllerTest extends AbstractTest {
         assertThat(data.getTotalElements()).isEqualTo(4);
         assertThat(data.getStream()).isNotNull().hasSize(4);
 
-        criteria.setType(ChatTypeDTO.HUMAN_CHAT);
+        criteria.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         data = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
                 .contentType(APPLICATION_JSON)
@@ -331,7 +331,7 @@ class ChatsRestControllerTest extends AbstractTest {
     void createHumanChatTest() {
         var chatDto = new CreateChatDTO();
         chatDto.setAppId("appId");
-        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
+        chatDto.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
 
         ParticipantDTO participantDto = new ParticipantDTO();
         participantDto.setEmail("example@email.com");
@@ -372,7 +372,7 @@ class ChatsRestControllerTest extends AbstractTest {
         var messageDto = new CreateMessageDTO();
         messageDto.setType(MessageTypeDTO.HUMAN);
         messageDto.setText("This is a human question");
-        messageDto.setUserName("human");
+        messageDto.setUserId("humanId");
 
         var messageId = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
@@ -472,7 +472,7 @@ class ChatsRestControllerTest extends AbstractTest {
         addParticipantDto.setUserName("user");
         addParticipantDto.setType(ParticipantTypeDTO.HUMAN);
 
-        var exception = given()
+        var response = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
                 .pathParam("chatId", "id-not-exist")
                 .when()
@@ -480,13 +480,10 @@ class ChatsRestControllerTest extends AbstractTest {
                 .body(addParticipantDto)
                 .post("{chatId}/participants")
                 .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract()
-                .body().as(ProblemDetailResponseDTO.class);
+                .statusCode(NOT_FOUND.getStatusCode());
 
-        Assertions.assertNotNull(exception);
-        Assertions.assertEquals("CHAT_DOES_NOT_EXIST", exception.getErrorCode());
-        Assertions.assertEquals("Chat does not exist", exception.getDetail());
+        assertThat(response).isNotNull();
+
     }
 
     @Test
@@ -552,7 +549,7 @@ class ChatsRestControllerTest extends AbstractTest {
         var messageDto = new CreateMessageDTO();
         messageDto.setType(MessageTypeDTO.HUMAN);
         messageDto.setText("This is a human question");
-        messageDto.setUserName("human");
+        messageDto.setUserId("humanId");
 
         var messageId = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
@@ -605,7 +602,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // create chat
         var chatDto = new CreateChatDTO();
-        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
+        chatDto.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         chatDto.setAppId("appId");
         chatDto.setTopic("topic");
         chatDto.setSummary("summary");
@@ -637,8 +634,7 @@ class ChatsRestControllerTest extends AbstractTest {
                         + //
                         "\r\n" + //
                         "Donec imperdiet, nunc vel sodales rhoncus, odio lacus ultricies dolor, a bibendum nisi urna vel orci. Sed auctor felis vel dolor feugiat, in volutpat metus dapibus. Suspendisse et arcu ut metus fermentum congue a a mi. Integer pellentesque, ligula in tincidunt commodo, dui quam vulputate nisl, vitae luctus felis eros vel elit. Ut auctor urna ut lectus efficitur interdum. In hac habitasse platea dictumst. Maecenas eu massa quis odio blandit cursus vel at neque. Sed ut pharetra turpis. Duis auctor elit ac aliquet venenatis. Proin ut nisi vel ex laoreet vestibulum id eu libero. Vivamus eleifend, quam sit amet consectetur dignissim, enim velit blandit orci, at feugiat nunc justo vel justo. Proin vel dui a ex vulputate vestibulum.");
-        messageDto.setUserName("GenAis");
-        messageDto.setReliability(0.9f);
+        messageDto.setUserId("GenAis");
 
         //create message
         var messageId = given()
@@ -668,8 +664,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         assertThat(response).isNotNull();
         assertThat(response).isNotNull().isNotEmpty().hasSize(1);
-        assertThat(response.get(0).getUserName()).isEqualTo("GenAis");
-        assertThat(response.get(0).getReliability()).isEqualTo(0.9f);
+        assertThat(response.get(0).getUserId()).isEqualTo("GenAis");
 
     }
 
@@ -678,7 +673,7 @@ class ChatsRestControllerTest extends AbstractTest {
         CreateMessageDTO createMessageDTO = new CreateMessageDTO();
         createMessageDTO.setType(MessageTypeDTO.ASSISTANT);
 
-        var exception = given()
+        var response = given()
                 .auth().oauth2(getKeycloakClientToken("testClient"))
                 .when()
                 .contentType(APPLICATION_JSON)
@@ -686,13 +681,9 @@ class ChatsRestControllerTest extends AbstractTest {
                 .pathParam("chatId", "not-exist-chat-id")
                 .post("{chatId}/messages")
                 .then()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .extract()
-                .body().as(ProblemDetailResponseDTO.class);
+                .statusCode(NOT_FOUND.getStatusCode());
 
-        Assertions.assertNotNull(exception);
-        Assertions.assertEquals("CHAT_DOES_NOT_EXIST", exception.getErrorCode());
-        Assertions.assertEquals("Chat does not exist", exception.getDetail());
+        assertThat(response).isNotNull();
 
     }
 
@@ -700,7 +691,7 @@ class ChatsRestControllerTest extends AbstractTest {
     void createChatMessageExceptionFromAIServiceTest() {
         CreateMessageDTO createMessageDTO = new CreateMessageDTO();
         createMessageDTO.setType(MessageTypeDTO.ASSISTANT);
-        createMessageDTO.setUserName("user");
+        createMessageDTO.setUserId("userId");
         createMessageDTO.setText("custom text");
 
         mockServerClient.when(request()
@@ -731,7 +722,7 @@ class ChatsRestControllerTest extends AbstractTest {
 
         // update none existing chat
         var chatDto = new UpdateChatDTO();
-        chatDto.setType(ChatTypeDTO.HUMAN_CHAT);
+        chatDto.setType(ChatTypeDTO.HUMAN_DIRECT_CHAT);
         chatDto.setTopic("topic-update");
 
         given()

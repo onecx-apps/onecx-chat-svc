@@ -306,7 +306,8 @@ components:
     ChatType:
       type: string
       enum:
-        - HUMAN_CHAT
+        - HUMAN_DIRECT_CHAT
+        - HUMAN_GROUP_CHAT
         - AI_CHAT
     MessageType:
       type: string
@@ -329,6 +330,8 @@ components:
         participant:
           type: string
         appId:
+          type: string
+        userId:
           type: string
         pageNumber:
           format: int32
@@ -406,6 +409,8 @@ components:
           type: string
         appId:
           type: string
+        userId:
+          type: string
         participants:
           type: array
           items:
@@ -432,11 +437,8 @@ components:
           $ref: '#/components/schemas/MessageType'
         text:
           type: string
-        userName:
+        userId:
           type: string
-        reliability:
-          type: number
-          format: float
     Participant:
       required:
         - type
@@ -519,13 +521,10 @@ components:
           type: string
         type:
           $ref: '#/components/schemas/MessageType'
-        userName:
+        userId:
           type: string
         requestContext:
           $ref: '#/components/schemas/RequestContext'
-        reliability:
-          type: number
-          format: float
     RequestContext:
       type: object
       properties:
